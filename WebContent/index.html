@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>海尔商城</title>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/layout.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link rel="stylesheet" href="css/slide.css">
+</head>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/slide.js"></script>
+<script type="text/javascript" src="js/category.js"></script>
+<style type="text/css">
+.nav .user.login {
+    display: unset;
+}
+.banner-con .banner-img{
+    width: 100%;
+    height: 370px;
+}
+/* #goods-img:hover {
+	/* width: 100%;
+	height: 100%;
+	overflower: hidden; */
+	transform: scale(1.2);
+} */
+
+
+</style>
+<body>
+<!--nav-->
+<div class="nav">
+    <div class="w">
+        <div class="user-info">
+        	<span v-if="onlogin" class="user login">
+                <span class="link-text">
+                    欢迎，
+                    <span class="username">{{memberInfo.nickName}}</span>
+                </span>
+                <a  @click="out" class="link">
+                	<span class="link js-logout">退出</span>
+                </a>
+
+            </span>
+            <span v-else class="user not-login">
+				<a class="link" href="user-login.html">
+					<span class="link js-login" >登录</span>
+				</a>
+                <a class="link" href="reg.html">
+					<span class="link js-register">注册</span>
+				</a>
+            </span>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a class="link" href="./cart.html">
+                    <i class="fa fa-shopping-cart"></i>
+                   	 购物车
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="link" href="./myorder.html">我的订单</a>
+            </li>
+            <li class="nav-item">
+                <a class="link" href="./person.html">个人中心</a>
+            </li>
+            <li class="nav-item">
+                <a class="link" href="./about.html">关于海尔</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<!--nav-->
+<!--header-->
+<div class="header" id="search">
+    <div class="w">
+        <a class="logo" href="./index.html">海尔电器</a>
+        <div class="search-con">
+            <input class="search-input" id="search-input" placeholder="请输入商品名称" v-model="name" />
+            <button class="btn search-btn" id="search-btn" onclick="gosearch()" >搜索</button>
+        </div>
+    </div>
+</div>
+<!--header-->
+<!--index-->
+		<div class="w">
+            <div class="category-box" >
+            	<div class="nav-index" style="">
+            		<ul>
+            			<li>
+            				<strong>
+            					<a href="conditioners.html?101">冰箱</a>
+            				</strong>
+            			</li>
+						<li>
+							<strong>
+								<a href="conditioners.html?102">洗衣机</a>
+							</strong>
+						</li>
+						<li>
+							<strong>
+								<a href="conditioners.html?103">空调</a>
+							</strong>
+						</li>
+						<li>
+							<strong>
+								<a href="conditioners.html?109">电视机</a>
+							</strong>
+						</li>
+						<li>
+							<strong>
+								<a href="conditioners.html?106">热水器</a>
+							</strong>
+						</li>
+						<li>
+							<strong>
+								<a href="conditioners.html?107">厨房电器</a>
+							</strong>
+						</li>
+						<li>
+							<strong>
+								<a href="conditioners.html?108">小家电</a>
+							</strong>
+						</li>
+            		</ul>
+            	</div>
+            	<div class="nav-main" style="z-index: 99;">
+            		<div class="food">
+            			<div class="colum">
+            				<b>
+								<a href="">冰箱</a>
+							</b>
+            				<div class="navbox">
+            					<nav>
+            						<a href="conditioners.html?10">单门</a>  
+            						<a href="">两门</a>  
+            						<a href="">三门</a>  
+            						<a href="">多门</a>  
+            						<a href="">对开门</a>  
+            						<a href="">十字对开门</a>   
+            						     						
+            					</nav>
+            				</div>
+            			</div>                     			
+            		</div>
+            		<div class="food">
+            			<div class="colum">
+            				<div class="navbox">
+            					<nav>
+            						<a href="">滚筒洗衣机</a>  
+            						<a href="">洗烘一体机</a>   
+            						<a href="">波轮洗衣机</a>  
+            						<a href="">双桶洗衣机</a>     
+            						<a href="">迷你洗衣机</a>   
+            						<a href="">干衣机</a>  
+            						<a href="">脱水机</a>     
+            						<a href="">洗鞋机</a>  						
+            					</nav>
+            				</div>
+            			</div>                     			
+            		</div>     
+            		<div class="food">
+            			<div class="colum">
+            				<div class="navbox">
+            					<nav>
+            						<a href="">壁挂式空调</a>  
+            						<a href="">柜式空调</a>   
+            						<a href="">移动空调</a>  
+            					</nav>
+            				</div>
+            			</div>                     			
+            		</div>
+            		<div class="food">
+            			<div class="colum">
+            				<div class="navbox">
+            					<nav>
+            						<a href="">平板电视</a>  
+            						<a href="">曲面电视</a>   
+            						<a href="">激光电视</a>  
+            					</nav>
+            				</div>
+            			</div>                    			
+            		</div>
+            		<div class="food">
+            			<div class="colum">
+            				<div class="navbox">
+            					<nav>
+            						<a href="">电热水器</a>  
+            						<a href="">燃气热水器</a>   
+            						<a href="">空气能热水器</a>  
+            						<a href="">太阳能热水器</a>
+            					</nav>
+            				</div>
+            			</div>                    			
+            		</div>
+            		<div class="food">
+            			<div class="colum">
+            				<div class="navbox">
+            					<nav>
+            						<a href="">油烟机</a>  
+            						<a href="">燃气灶</a>   
+            						<a href="">集成灶</a>  
+            						<a href="">消毒柜</a>
+            						<a href="">微波炉</a>   
+            						<a href="">电烤箱</a>  
+            						<a href="">蒸箱</a>
+            					</nav>
+            				</div>
+            			</div>                    			
+            		</div>
+            		<div class="food">
+            			<div class="colum">
+            				<div class="navbox">
+            					<nav>
+            						<a href="">吸尘器</a>  
+            						<a href="">饮水机</a>   
+            						<a href="">净水器</a>  
+            					</nav>
+            				</div>
+            			</div>                    			
+            		</div>
+            	</div>
+            </div>
+			<!-- 轮播图 -->
+            <div class="banner-con" style="float: right; width: 90%;">
+				<div class="ck-slide" style="width: 100%; height: 100%;">
+				    <ul class="ck-slide-wrapper">
+				        <li>
+				            <a href="#"><img src="images/1.jpg" alt="" style="width: 1000px; height: 380px;"></a>
+				        </li>
+				        <li style="display:none">
+				            <a href="#"><img src="images/2.jpg" alt="" style="width: 1000px; height: 380px;"></a>
+				        </li>
+				        <li style="display:none">
+				            <a href="#"><img src="images/3.jpg" alt="" style="width: 1000px; height: 380px;"></a>
+				        </li>
+				        <li style="display:none">
+				            <a href="#"><img src="images/4.jpg" alt="" style="width: 1000px; height: 380px;"></a>
+				        </li>
+				        <li style="display:none">
+				            <a href="#"><img src="images/5.jpg" alt="" style="width: 1000px; height: 380px;"></a>
+				        </li>
+				    </ul>
+				    <a href="javascript:;" class="ctrl-slide ck-prev">上一张</a>
+				    <a href="javascript:;" class="ctrl-slide ck-next">下一张</a>
+				    <div class="ck-slidebox">
+				        <div class="slideWrap">
+				            <ul class="dot-wrap">
+				                <li class="current"><em>1</em></li>
+				                <li><em>2</em></li>
+				                <li><em>3</em></li>
+				                <li><em>4</em></li>
+				                <li><em>5</em></li>
+				            </ul>
+				        </div>
+				    </div>
+				</div>
+            </div>
+       </div> 
+        <div class="w">
+            <div class="floor_wrap">
+                <h1 class="floor-title">精选优品</h1>
+                <ul class="floor-list">
+                    <li class="floor-item" v-for="good in goods">
+                        <a :href="'./detail.html?' + good.gid"> 
+                            <span class="price-text">￥{{good.price}}</span>                 
+                            <img class="floor-img" id="goods-img" :src="good.pics.split(';')[0]" :alt="good.sname" />
+                            <span class="floor-text">{{good.sname}}</span>
+                                                    
+                        </a>
+                    </li>
+                </ul>
+                <div id="pagination"></div>
+            </div>
+        </div>
+
+<!--index-->
+<!--footer-->
+<div class="footer">
+    <div class="w">
+        <div class="links">
+            <a class="link" href="http://www.imooc.com" target="_blank">慕课网</a> |
+            <a class="link" href="https://www.baidu.com" target="_blank">百度</a> |
+            <a class="link" href="https://www.taobao.com" target="_blank">淘宝</a> |
+            <a class="link" href="https://www.zhihu.com" target="_blank">知乎</a>
+        </div>
+        <p class="copyright">
+            Copyright © 2020 haier.com All Right Reserved
+        </p>
+    </div>
+</div>
+
+<script  type="text/javascript" src="js/checkData.js"></script>
+<script type="text/javascript" src="./js/axios.js"></script>
+<script type="text/javascript" src="./js/vue.js"></script>
+<script type="text/javascript" src="./js/qs.js"></script>
+<script type="text/javascript" src="./js/tk.js"></script>
+<script type="text/javascript" src="./js/search.js"></script>
+<script type="text/javascript" src="./js/showpage.js"></script>
+<script type="text/javascript">
+//检查 登录
+let nav = new Vue({
+	el: ".nav",	// 这个vue对象的作业范围
+	data: {
+		onlogin: false,	// 记录是否已经登录
+		memberInfo: {}	// 当前登录的对象
+	},
+	mounted: function() {
+		// 发送一个请求去获取用户登录信息
+		axios.get("member", {params: {op:"check"}}).then(rt => {
+			if (rt.status == 200 && rt.data.code == 200) {
+				this.onlogin = true;
+				this.memberInfo = rt.data.data;
+			} else {
+				this.onlogin = false;
+				this.memberInfo = {};
+			}
+		})
+	},
+	methods: {
+		out: function() {
+			axios.get("member", {params: {op:"out"}}).then(rt => {
+				location.href="index.html";
+			})
+		}
+	}
+});
+
+// 显示精品
+var page = 1;
+var rows = 20;
+let floor_wrap = new Vue({
+	el: ".floor_wrap",
+	data: {
+		goods: [],
+		pics: [],
+		total: 0
+	},
+	mounted: function() {
+		axios.post("goods", qs.stringify({op:"findByFirst", page:page, rows:rows})).then(rt => {
+			if (rt.status == 200) {
+				this.total = rt.data.total;
+				this.goods = rt.data.rows;
+				$("#pagination").showPage(Math.ceil(this.total / rows));
+			}
+		}, "json");
+	}
+})
+
+function findByPage(index) {
+	page = index;
+	axios.post("goods", qs.stringify({op:"finds", page:page, rows:rows})).then(rt => {
+		if (rt.status == 200) {
+			floor_wrap.$data.goods = rt.data;
+		}
+	}, "json");
+}
+
+
+//去搜索页面
+function gosearch() {
+	var name = $.trim($("#search-input").val());
+	if(name == "") {
+		return;
+	}
+	location.href = "search.html?"+name+"";
+}
+$('.ck-slide').ckSlide({
+	autoPlay:true
+	/*dir:"x"*/
+});
+jQuery(".category-box").tab({titCell:'.nav-index li',mainCell:'.nav-main'});
+</script>
+</body>
+</html>
+

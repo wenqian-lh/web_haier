@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    
+	<title>海尔-用户中心</title>
+	<link rel="stylesheet" type="text/css" href="css/reset.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<link rel="stylesheet" href="css/header.css">
+	
+	
+	<style>
+		body {
+			width: 100%;
+			height: 600px;
+		}
+		.header_center label {
+			margin-left: 20px;
+			font-size: 25px;
+		}
+		
+		#preinfo_photo img{
+			float: right;
+			margin-right: -100px;
+			width: 100px;
+		    height:100px;
+		}
+		
+		li {
+			list-style: none;
+			height: 50px;
+		}
+		.main_center li label {
+			float: left;
+			font-size: 15px;
+			color: #999999;
+			line-height: 35px;
+			width: 200px;
+		}
+		
+		.main_center li input {
+			float: left;
+			width:200px;
+			height: 25px;
+			margin-left: -100px;
+		}
+		#preinfo_save {
+			width: 260px;
+			height: 40px;
+			text-align: center; 
+			margin-left: 20px; 
+			background-color: #C60023;
+			border: #C60023 0px solid;
+			font-size: 20px;
+			font-weight: 800;
+		}
+		#show_photo{
+			float: right;
+			width: 200px;
+			height: 200px;
+			position: absolute;
+			top: 10px;
+			right: 225px;
+		}
+		.footer{
+			border-top:2px solid #C60023;
+			margin:30px 0;
+		}
+		
+	</style>
+    
+</head>
+<body>
+<div class="crumb" >
+            <div class="w">
+                <div class="crumb-list">
+                    <a href="./index.html" class="crumb-item">首页</a>
+                    <span>></span>
+                    <span class="crumb-item">个人中心</span>
+                </div>
+            </div>
+</div>
+<div class="main_con clearfix">
+<div class="left_menu_con clearfix">
+			<h3>用户中心</h3>
+			<ul>
+				<li><a href="person.html" class="active">· 个人信息</a></li>
+				<li><a href="order.html" >· 全部订单</a></li>
+				<li><a href="place.html" >· 收货地址</a></li>
+			</ul>
+		</div>
+	<div class="right_content clearfix">
+		<div class="info_con clearfix">
+		<h3 class="common_title2">基本信息</h3>
+			<div class="main_center">
+				<ul>
+					<li id="preinfo_photo">
+						<label id="preinfo_photo">头像：</label>
+						<input type="file" id="photo" name="photo" onchange="setImagePreviewss(this, 'show_photo', 100, 100)" />
+						<img id="" src='' />
+					</li>
+					<li>
+						<label id="preinfo_mid">会员号：</label>
+						<input id="mid" v-model="mid" type="text" />
+					</li>
+					<li>
+						<label id="preinfo_nickName">昵称：</label>
+						<input id="nickName" v-model="nickName" type="text" />
+					</li>
+					<li>
+						<label id="preinfo_realName">真实姓名：</label>
+						<input id="realName" v-model="realName" type="text" />
+					</li>
+					<li>
+						<label id="preinfo_tel">联系方式：</label>
+						<input id="tel" v-model="tel" type="text" />
+					</li>
+					<li>
+						<label id="preinfo_email">邮箱：</label>
+						<input id="email" v-model="email" type="text" />
+					</li>
+					<li>
+						<label id="preinfo_regDate">注册日期：</label>
+						<input id="regDate" v-model="regDate" type="text" />
+					</li>
+					<li>
+						<button id="preinfo_save" onclick="save();">保存</button>
+					</li>
+				</ul>
+			</div>
+			<div id="show_photo"></div>	
+		</div>
+	</div>
+</div>
+
+
+	<div class="footer">
+		<div class="foot_link">
+			<a href="#">关于我们</a>
+			<span>|</span>
+			<a href="#">联系我们</a>
+			<span>|</span>
+			<a href="#">招聘人才</a>
+			<span>|</span>
+			<a href="#">友情链接</a>		
+		</div>
+		<p>CopyRight © 2020 haier.com All Rights Reserved</p>
+		<p>电话：010-****888    京ICP备*******8号</p>
+	</div>
+<script type="text/javascript" src="js/checkData.js"></script>
+<script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="./js/axios.js"></script>
+<script type="text/javascript" src="./js/vue.js"></script>
+<script type="text/javascript" src="./js/qs.js"></script>
+<script type="text/javascript" src="./js/tk.js"></script>
+<script type="text/javascript" src="./back/js/showpic .js"></script>
+<script type="text/javascript" src="./back/js/ajaxfileupload.js"></script>
+<script type="text/javascript">
+
+let person = new Vue({
+	el:".main_center",
+	data: {
+		mid:"",
+		nickName:"",
+		realName:"",
+		tel:"",
+		email:"",
+		regDate:"",
+	},
+	mounted: function() {
+		// 发送一个请求去获取用户登录信息
+		axios.get("member", {params: {op:"check"}}).then(rt => {
+			if (rt.status == 200 && rt.data.code == 500) {
+				location.href="user-login.html";
+				return;
+			}
+			this.mid = rt.data.data.mid;
+			this.nickName = rt.data.data.nickName;
+			this.realName = rt.data.data.realName;
+			this.tel = rt.data.data.tel;
+			this.email = rt.data.data.email;
+			this.regDate = rt.data.data.regDate;
+			if (rt.data.data.photo) {	
+				console.log("0:"+rt.data.data.photo)
+				$("#preinfo_photo img").attr("src", "../" + rt.data.data.photo);
+			}else{ // 为 null
+				console.log("1:"+rt.data.data.photo)
+				$("#preinfo_photo img").attr("src", "image/floor/floor2-4.jpg");
+			}
+		}, "json");
+		
+	},
+	methods: {
+		
+	}
+})
+
+function save() {
+	var mid = $.trim($("#mid").val());	// 类型编号
+	var nickName = $.trim($("#nickName").val());	// 店铺名称
+	var realName = $.trim($("#realName").val());
+	var tel = $.trim($("#tel").val());
+	var email = $.trim($("#email").val());
+	var regDate = $.trim($("#regDate").val());
+	
+	var obj = {mid:mid, nickName:nickName, realName:realName, 
+			tel:tel, email:email, regDate:regDate};
+	console.log(obj);
+	$.ajaxFileUpload({				// 此时的 op已经变成了字节
+		url: "member?op=save",	// 注意:此时的 op必须拼接在地址栏，不能放数据区，否则后台无法直接通过 request.getParameter("op")获取			
+		secureuri: false,
+		fileElementId: ["photo"],	// 所有 file文本框的 id属性值
+		dataType: "json",	// 数据的格式
+		data: obj,		// 要发送的数据
+		success: function(data, status) {
+			if (data.code == 200) {
+				console.log("1");
+				location.href = "person.html";
+			} else {
+				console.log("2");
+			}
+		},						// e: 错误信息
+		error: function(data, status, e) {
+			console.log("3");
+		}
+	});
+}
+
+function fileSelect() {
+	document.getElementById("photo").click(); 
+}
+</script>
+</body>
+</html>

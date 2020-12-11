@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>海尔商城</title>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/layout.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link rel="stylesheet" href="css/slide.css">
+	<link rel="stylesheet" href="css/muti-select-search.css">
+</head>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/slide.js"></script>
+<script type="text/javascript" src="js/category.js"></script>
+<script src="js/muti-select-search.js"></script>
+<style type="text/css">
+.nav .user.login {
+    display: unset;
+}
+.banner-con .banner-img{
+    width: 100%;
+    height: 370px;
+}
+select {
+	width: 100px;
+	height: 30px;
+	color: #5F5858;
+	font-size: 18px;
+	text-align: center;
+}
+
+</style>
+<body>
+	<div  id="conditioners_body">
+		<div class="crumb">
+            <div class="w">
+                <div class="crumb-con">
+                    <a class="link" href="./index.html">首页</a>
+                   <span>>条件筛选 </span>
+                   
+                   
+                </div>
+            </div>
+        </div>
+			<div class="w">
+					<select  id="select_type" v-model="type" @click="getptype('1')"  onchange="show_ptype()">
+		                   <option value="">不限</option>
+		                   <option v-for="type in types" :value="type.tid" >{{type.tname}}</option>
+		            </select>
+				   <span>产品类型</span>
+                   <select id="select_ptype" v-model="ptype" @click="getptype">
+                   		
+                   </select>
+                   <span> -> 价格区间</span>
+                   <select id="select_ptype" v-model="price"  @click="getptype">
+                   		<option value="">不限</option>
+                   		<option value="1" >1000-3000</option>
+                   		<option value="2">3000-5000</option>
+                   		<option value="3">5000-7000</option>
+                   		<option value="4">7000-9000</option>
+                   		<option value="5">9000++</option>
+                   </select>
+                   <span class="link-text"></span>
+			</div>
+        <div class="w">
+        	<span id="price_desc" @click="getdesc">价格 ↑</span>
+            <div class="floor_wrap">
+                <h1 class="floor-title"></h1>             
+                <ul class="floor-list">
+                    <li class="floor-item" v-for="good in goods">
+                        <a :href="'detail.html?' + good.gid">
+                      	    <span class="price-text">￥{{good.price}}</span>
+                            <img class="floor-img" id="goods-img" :src="good.pics.split(';')[0]" :alt="good.sname" />
+                            <span class="floor-text">{{good.sname}}</span>                         
+                        </a>
+                    </li>
+                </ul>
+                <div id="pagination"></div>
+            </div>
+        </div>
+    </div>
+<!--index-->
+<!--footer-->
+<div class="footer">
+    <div class="w">
+        <div class="links">
+            <a class="link" href="http://www.imooc.com" target="_blank">慕课网</a> |
+            <a class="link" href="https://www.baidu.com" target="_blank">百度</a> |
+            <a class="link" href="https://www.taobao.com" target="_blank">淘宝</a> |
+            <a class="link" href="https://www.zhihu.com" target="_blank">知乎</a>
+        </div>
+        <p class="copyright">
+            Copyright © 2020 haier.com All Right Reserved
+        </p>
+    </div>
+</div>
+
+<script  type="text/javascript" src="js/checkData.js"></script>
+<script type="text/javascript" src="./js/axios.js"></script>
+<script type="text/javascript" src="./js/vue.js"></script>
+<script type="text/javascript" src="./js/qs.js"></script>
+<script type="text/javascript" src="./js/tk.js"></script>
+<script type="text/javascript" src="./js/showpage.js"></script>
+<script type="text/javascript">
+var page = 1;
+var rows = 4;
+var d = 1;
+var old = "";
+//父类型显示
+let conditioners_type = new Vue({
+	el: "#conditioners_body",
+	data: {
+		types: {},
+		type: location.search.replace("?",""),
+		ptypes: {},
+		ptype: "",
+		price: "",
+		goods: {},
+		total: "",
+		desc: ""
+	},
+	mounted: function() {
+		axios.post("type", qs.stringify({op: "findAll"})).then( rt => {
+			this.types = rt.data;
+		})
+		//setTimeout(function() {
+			var index_type = location.search.replace("?", "");
+			$("#select_type").val(index_type);
+			page = 1;
+			axios.post("goods", qs.stringify({op: "findConditioners", tid: index_type, pid: this.ptype, price: this.price, desc: "0", page: page, rows: rows})).then(rt => {
+				this.total = rt.data.total;
+				this.goods = rt.data.rows;
+				$("#pagination").showPage(Math.ceil(this.total / rows));
+			});
+		//}, 100);
+		setTimeout(function() {
+			var index_type = location.search.replace("?", "");
+			$.post("ptype", {op:"findCondition", tid: index_type, page: "1", rows: "100"}, data => {
+				this.ptypes = data.rows;	
+				var str = '<option value="">-- 请选择 --</option>';
+				$.each(ptypes, function(index, item){
+					str += '<option value="'+ item.pid +'">'+ item.pname +'</option>';
+				})
+				$("#select_ptype").html("").append(str);
+				str = "";
+			}, "json");		
+		}, 200);
+	},
+	methods: {
+		getptype: function(flag) {	 // flag 当选择的是父分类时，清空子分类的值
+			if(flag == '1' && old == this.type) {
+				return;
+			}
+			if(flag == '1') {
+				this.ptype = "";
+			}
+			page = 1;
+			axios.post("goods", qs.stringify({op: "findConditioners", tid: this.type, pid: this.ptype, price: this.price, desc: this.desc, page: page, rows: rows})).then(rt => {
+				this.total = rt.data.total;
+				this.goods = rt.data.rows;
+				$("#pagination").showPage(Math.ceil(this.total / rows));
+			});
+			old = this.type;
+		},
+		getdesc: function() {
+			if( d % 2 == 1) {
+				d++;
+				$("#price_desc").html("价格↓");
+				this.desc = '1';
+				this.getptype();
+			} else {
+				d--;
+				$("#price_desc").html("价格↑");
+				this.desc = "0";
+				this.getptype();
+			}
+		}
+	}	
+});
+
+function show_ptype(){
+	$.post("ptype", {op:"findCondition", tid: $("#select_type").val(), page: "1", rows: "100"}, data => {
+		var ptypes = data.rows;
+		var str = '<option value="" >-- 请选择 --</option>';
+		$.each(ptypes, function(index, item){
+			str += '<option value="'+ item.pid +'">'+ item.pname +'</option>';
+		})
+		$("#select_ptype").html("").append(str);
+		str = "";
+	}, "json");	
+}
+
+function findByPage(index) {
+	page = index;
+	axios.post("goods", qs.stringify({op:"findConditioners", tid: conditioners_type.$data.type, pid: conditioners_type.$data.ptype, price: conditioners_type.$data.price, page:page, rows:rows})).then(rt => {
+		if (rt.status == 200) {
+			conditioners_type.$data.goods = rt.data.rows;
+		}
+	}, "json");
+}
+
+</script>
+</body>
+</html>
+

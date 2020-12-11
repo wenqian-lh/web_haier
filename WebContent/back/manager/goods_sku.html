@@ -1,0 +1,383 @@
+<!-- 添加和按条件搜索商品 -->
+<div id="sku_search">
+	 <a id="btn" href="javascript:showAddskuInfoDialog()" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true"  >添加</a>  
+     <hr />
+     <label class="navy_lbl">品类:</label>
+     <select id="sku_search_tid" class="navy_slt200" style="width:100px;" onchange="getPtypes('#sku_search_tid', '#sku_search_pid')" >
+     		
+     </select>
+      <label class="navy_lbl">类别:</label>
+     <select id="sku_search_pid" class="navy_slt200" style="width:100px;"></select>
+     <label class="navy_lbl">商品状态:</label>
+     <select id="sku_search_status" class="navy_slt200" style="width:100px;">
+     	<option value="">--请选择--</option>
+     	<option value="0">下架</option>
+     	<option value="1">正常</option>
+     	<option value="2">缺货</option>
+     </select>
+      <label class="navy_lbl">商品名称：</label> <input type="text" id="sku_search_gname" class="navy_ipt200" placeholder="请输入商品名称"></input>
+     	 <a id="btn" href="javascript:searchskuInfo()" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="searchskuInfo()">查询</a>  
+</div>
+
+<!-- 添加商品和显示详细信息的窗口  -->
+<div id="sku_dialog" class="easyui-dialog", data-options="resizable:true, modal:true, closed:true">
+	<form id="sku_form" >
+		<ul>
+		 	<li> <label>品类：</label> <select id="sku_dialog_tid" class="navy_ipt400"  v-model="tid" onclick="getGoodsName()" onchange="getPtypes('#sku_dialog_tid', '#sku_dialog_pid')"></select> </li>
+		 	<li> <label>类别：</label> <select id="sku_dialog_pid" class="navy_ipt400"  v-model="pid" onclick="getGoodsName()" onchange="getGoodsName()" ></select> </li>
+		 	<li> <label class="navy_lbl">商品状态:</label>
+			     <select id="sku_dialog_status" class="navy_slt200" onclick="getGoodsName()" onchange="getGoodsName()" v-model="status" >
+			     	<option value="1">正常</option>
+			     	<option value="0">下架</option>     				
+     				<option value="2">缺货</option>
+			     </select>
+			</li>
+			<li> <label class="navy_lbl">商品:</label>
+			     <select id="sku_dialog_goods" class="navy_slt200"  v-model="sname">			     	
+			     </select>
+			</li>
+			<li> 
+				 <label for="sku_dialog_attrvalue">属性名：</label>
+				 <select id="sku_dialog_attrname">
+				 	<option value="">--请选择--</option>
+			     	<option value="颜色">颜色</option>
+     				<option value="匹数">匹数</option>
+     				<option value="容量">容量</option>
+				 </select>
+			</li>
+			<li> <label for="sku_dialog_attrvalue">属性值：</label> <input type="text" id="sku_dialog_attrvalue" class="navy_ipt400" placeholder=""></input> </li>
+			<li> <label for="sku_dialog_price">单品价格：</label> <input type="text" id="sku_dialog_price" class="navy_ipt400" placeholder=""></input> </li>
+			<li> <label for="sku_dialog_cost">成本价格：</label> <input type="text" id="sku_dialog_cost" class="navy_ipt400" placeholder=""></input> </li>
+			<li> <label for="sku_dialog_stock">库存：</label> <input type="text" id="sku_dialog_stock" class="navy_ipt400" placeholder=""></input> </li>
+			<li> <label for="sku_dialog_maxstock">库存上限：</label> <input type="text" id="sku_dialog_maxstock" class="navy_ipt400" placeholder=""></input> </li>
+			<li> <label for="sku_dialog_minstock">库存预警线：</label> <input type="text" id="sku_dialog_minstock" class="navy_ipt400" placeholder=""></input> </li>
+			<li class="myli"> <label>商品图片：</label> <input type="file" id="sku_dialog_pics" name="pics" multiple="multiple" onchange="setImagePreviews(this, 'show_sku_dialog_pics', 300, 200)"></input> </li>
+			<li id="show_sku_dialog_pics" class="myli"> </li>
+		</ul>
+	</form>
+	 
+	
+	<style>
+		#sku_form li {
+			list-style-type: none;
+			margin-top: 20px;
+		}
+		
+		#sku_form .myli {
+			width: 100%;
+		}
+		
+		#sku_form li> label {
+			width: 100px;
+			display: inline-block;
+			text-align: right;
+		}
+		#show_sku_dialog_pics {
+			height: 100px;
+		}
+	</style>
+</div>  
+
+
+<table id="sku_info">    </table>  
+<script>
+var sku_obj = $('#sku_info').datagrid({   
+    url:'../../skuinfo',
+    queryParams:{op:"findByPage"},
+	fitColumns: true, 
+	pagination: true,
+	pagePosition: 'bottom',
+	singleSelect: true,
+	striped: true,
+    columns:[[   
+        {field:'sid',title:'SKU编号',width:100,align:'center'},   
+        {field:'sname',title:'商品名称',width:100,align:'center'},   
+        {field:'attrname',title:'属性名',width:100,align:'center'},
+        {field:'attrvalue',title:'属性值',width:100,align:'center'},
+        {field:'price',title:'价格',width:100,align:'center'},
+        {field:'stock',title:'库存',width:100,align:'center'},
+        {field:'status',title:'状态',width:100,align:'center', formatter: function(val, row, index){
+        	if(val == 1) {
+        		return "<font color='green'>正常</font>";
+        	} else if(val == 2) {
+        		return "<font color='red'>缺货</font>";
+        	} else {
+        		return "<font color='red'>下架</font>";
+        	}
+        }},
+        {field:'_operator', title:'操作', width: 100, align:"center", formatter: function(val, row, index){
+        	return '<a href="javascript:showUpdateskuInfoDialog('+ row.sid +')" class="navy-icon-edit">修改</a>&nbsp;<a href="javascript:showskuInfoDetail('+ row.sid +')" class="navy-icon-detail">详细</a>';
+        }}
+    ]]   
+});  
+
+ //父类型显示
+let type_vue_sku = new Vue({
+	el: "#sku_search",
+	data: {
+		types: {}
+	},
+	mounted: function() {
+		axios.post("../../type", qs.stringify({op: "findAll"})).then( rt => {
+			this.types = rt.data;
+			var str = '<option value="">-- 请选择 --</option>';
+			$.each(this.types, function(index, item){
+				str += '<option value="'+ item.tid +'">'+ item.tname +'</option>';
+			})
+			$("#sku_search_tid").html("").append($(str));
+			$("#sku_dialog_tid").html("").append($(str));
+		})
+	}
+}) 
+
+// 父类型的显示和子类型的级联显示
+function getPtypes(type_select, ptype_select) {
+	var type = $(type_select).val();
+	var str = "";
+	$.post("../../ptype", {op:"findCondition", tid:type, page: "1", rows: "100"}, data => {
+		var ptypes = data.rows;
+	    str = '<option value="">-- 请选择 --</option>';
+		$.each(ptypes, function(index, item){
+			str += '<option value="'+ item.pid +'">'+ item.pname +'</option>';
+		})
+		$(ptype_select).html("").append(str);
+		str = "";
+	}, "json");	
+}
+
+// 商品选择下拉列表的注值
+function getGoodsName() {
+	var tid = $("#sku_dialog_tid").val();
+	var pid = $("#sku_dialog_pid").val();
+	var status = $("#sku_dialog_status").val();
+	var sname = $("#sku_dialog_goods").val();
+	
+	$.post("../../goods", {op:"getGoodsName", tid: tid, pid: pid, status: status}, data => {
+		var str = '<option value="">-- 请选择 --</option>';
+		$.each(data, function(index, item){
+			str += '<option value="'+ item.gid +'">'+ item.sname +'</option>';
+		})
+		$("#sku_dialog_goods").html("").append(str);
+	}, 'json');
+}
+
+/* let goodsName = new Vue({
+	el: "#sku_form",
+	data: {
+		tid: "",
+		pid: "",
+		status: "",
+	},
+	methods: {
+		getGoodsName: function() {
+			axios.post("../../goods", qs.stringify({op: "getGoodsName", tid: this.tid, pid: this.pid, status: this.status})).then( rt => {
+				this.goods_str = ""
+			})
+		}
+	}
+})  */
+
+//打开添加商品信息的窗口
+function showAddskuInfoDialog(){
+	$("#sku_form input").removeAttr("readonly");
+	$("#sku_form select").removeAttr("disabled");
+	$("#sku_form")[0].reset(); // 表单重置 [0]相当于是将jquery对象转成js对象 $(obj) -> js对象转jquery对象
+	$("#show_sku_dialog_pics").html("");
+	$("#sku_dialog_tid, #sku_dialog_pid").val("");
+	$('#sku_dialog').dialog({
+		title: '添加店铺信息',
+		fit: true,
+		buttons: [
+			{
+				text: "添加",
+				iconCls: "icon-ok",
+				handler: function() {
+					sku_addInfo();
+				}
+			}, {
+				text: "取消",
+				iconCls: "icon-cancel",
+				handler: function() {
+					$('#sku_dialog').dialog('close');
+				}
+			}
+		]
+	})
+	$('#sku_dialog').dialog('open');
+}
+
+// 打开修改商品信息的窗口
+function showUpdateskuInfoDialog(sid) {
+	$.post("../../skuinfo", {op: "findBySid", sid: sid}, data =>{	
+		$("#sku_dialog_tid").attr("disabled", "true");
+		$("#sku_dialog_pid").attr("disabled", "true");
+		$("#sku_dialog_goods").attr("disabled", "true");
+		var str = "<option>" + data.pname + "</option>";
+		$("#sku_dialog_tid").val(data.tid);
+		$("#sku_dialog_pid").html("").append($(str));
+		$("#sku_dialog_status").val(data.status);
+		str = "";
+		str = "<option>" + data.sname + "</option>";
+		$("#sku_dialog_goods").html("").append(str);
+		$("#sku_dialog_attrname").val(data.attrname);
+		$("#sku_dialog_attrvalue").val(data.attrvalue);
+		$("#sku_dialog_price").val(data.price);
+		$("#sku_dialog_cost").val(data.cost);
+		$("#sku_dialog_stock").val(data.stock);
+		$("#sku_dialog_maxstock").val(data.maxStock);
+		$("#sku_dialog_minstock").val(data.minStock);
+		
+		var imgStr = "<img src='../../" + data.pics + "' width='100px' height='100px'/>&nbsp";
+		$("#show_sku_dialog_pics").html("").append($(imgStr));
+		$("#sku_dialog").dialog({
+			title: '店铺详细信息',
+			fit: true,
+			maximizable: true,
+			buttons: [
+				{
+					text: "修改",
+					iconCls: "icon-ok",
+					handler: function() {
+						goods_updateInfo(sid);
+					}
+				},
+				{
+					text: "关闭",
+					iconCls: "icon-cancel",
+					handler: function() {
+						$("#goods_dialog").dialog("close");
+					}
+				}
+			]
+		});
+		$('#sku_dialog').dialog('open');
+	}, 'json');
+}
+
+//  显示详细信息
+function showskuInfoDetail(sid) {
+	$.post("../../skuinfo", {op: "findBySid", sid: sid}, data =>{	
+		
+		$("#sku_form input").attr("readonly");
+		$("#sku_form select").attr("disabled", true);
+		
+		
+		$("#sku_dialog_goods").attr("disabled", "true");
+		var str = "<option>" + data.pname + "</option>";
+		$("#sku_dialog_tid").val(data.tid);
+		$("#sku_dialog_pid").html("").append($(str));
+		$("#sku_dialog_status").val(data.status);
+		str = "";
+		str = "<option>" + data.sname + "</option>";
+		$("#sku_dialog_goods").html("").append(str);
+		$("#sku_dialog_attrname").val(data.attrname);
+		$("#sku_dialog_attrvalue").val(data.attrvalue);
+		$("#sku_dialog_price").val(data.price);
+		$("#sku_dialog_cost").val(data.cost);
+		$("#sku_dialog_stock").val(data.stock);
+		$("#sku_dialog_maxstock").val(data.maxStock);
+		$("#sku_dialog_minstock").val(data.minStock);
+		
+		var imgStr = "<img src='../../" + data.pics + "' width='100px' height='100px'/>&nbsp";
+		$("#show_sku_dialog_pics").html("").append($(imgStr));
+		$("#sku_dialog").dialog({
+			title: '店铺详细信息',
+			fit: true,
+			maximizable: true,
+			buttons: [{
+					text: "关闭",
+					iconCls: "icon-cancel",
+					handler: function() {
+						$("#goods_dialog").dialog("close");
+					}
+				}
+		   ]
+		});
+		$('#sku_dialog').dialog('open');
+	}, 'json');
+}
+// 添加商品
+function sku_addInfo() {
+	var gid = $.trim($("#sku_dialog_goods").val());
+	var attrname = $.trim($("#sku_dialog_attrname").val());
+	var attrvalue = $.trim($("#sku_dialog_attrvalue").val());
+	var price = $.trim($("#sku_dialog_price").val());
+	var cost = $.trim($("#sku_dialog_cost").val());
+	var stock = $.trim($("#sku_dialog_stock").val());
+	var maxStock = $.trim($("#sku_dialog_maxstock").val());
+	var minStock = $.trim($("#sku_dialog_minstock").val());
+	var pics = $.trim($("#sku_dialog_pics").val());
+	var status = $.trim($("#sku_dialog_status").val());
+	var obj = {gid: gid, attrname: attrname, attrvalue: attrvalue, price: price, cost: cost, stock: stock, maxStock: maxStock, minStock: minStock, pics: pics, status: status};
+	$.ajaxFileUpload({
+		url: "../../skuinfo?op=add",
+		secureuri: false,
+		fileElementId: ["sku_dialog_pics"], 
+		dataType: "json", // 数据格式
+		data: obj, //要发送的数据
+		success: function(data, status) {
+			console.log(data);
+			console.log(status);
+			if(data.code == 200) {
+				sku_obj.datagrid("reload"); // 重新加载数据
+				$("#sku_dialog").dialog("close"); // 关闭弹出框
+				$.messager.show({title: "成功提示", msg: "商品信息添加成功", timeout: 2000, showType:"slide"});
+			} else {
+				$.messager.alert("失败提示", "商品信息添加失败", "error");
+			}
+		},
+		error: function(data, status, e) {
+			$.messager.alert("失败提示", "商品信息添加失败...\n" + e, "error");
+		}
+	}); 	
+}
+
+// 修改商品
+function goods_updateInfo(sid) {
+	var attrname = $.trim($("#sku_dialog_attrname").val());
+	var attrvalue = $.trim($("#sku_dialog_attrvalue").val());
+	var price = $.trim($("#sku_dialog_price").val());
+	var cost = $.trim($("#sku_dialog_cost").val());
+	var stock = $.trim($("#sku_dialog_stock").val());
+	var maxStock = $.trim($("#sku_dialog_maxstock").val());
+	var minStock = $.trim($("#sku_dialog_minstock").val());
+	var pics = $.trim($("#sku_dialog_pics").val());
+	var status = $.trim($("#sku_dialog_status").val());
+	var obj = {sid: sid, attrname: attrname, attrvalue: attrvalue, price: price, cost: cost, stock: stock, maxStock: maxStock, minStock: minStock, pics: pics, status: status};
+	console.log(obj);
+	$.ajaxFileUpload({
+		url: "../../skuinfo?op=update",
+		secureuri: false,
+		fileElementId: ["sku_dialog_pics"], 
+		dataType: "json", // 数据格式
+		data: obj, //要发送的数据
+		success: function(data, status) {
+			console.log(data);
+			console.log(status);
+			if(data.code == 200) {
+				sku_obj.datagrid("reload"); // 重新加载数据
+				$("#sku_dialog").dialog("close"); // 关闭弹出框
+				$.messager.show({title: "成功提示", msg: "商品修改添加成功", timeout: 2000, showType:"slide"});
+			} else {
+				$.messager.alert("失败提示", "商品信息修改失败", "error");
+			}
+		},
+		error: function(data, status, e) {
+			$.messager.alert("失败提示", "商品信息修改失败...\n" + e, "error");
+		}
+	}); 
+}
+
+// 按条件查询商品信息
+function  searchskuInfo() {
+	var tid = $.trim($("#sku_search_tid").val());
+	var pid = $.trim($("#sku_search_pid").val());
+	var status = $.trim($("#sku_search_status").val());
+	var sname = $.trim($("#sku_search_gname").val());
+	sku_obj.datagrid({
+		url: "../../skuinfo",
+		queryParams: {op: "findCondition", tid: tid, pid: pid, status: status, sname: sname}
+	})
+}
+
+</script>

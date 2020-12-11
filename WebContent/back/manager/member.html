@@ -1,0 +1,272 @@
+<div id="member_search" style="float:left;">
+	<div class="datagrid-btn-separator"></div>
+	<label class="navy_lbl">搜索方式:</label>
+	<select id="member_search_way" class="navy_slt200">
+		<option value="">--请选择--</option>
+		<option value="0">编号</option>
+		<option value="1">昵称</option>
+		<option value="2">真实姓名</option>
+		<option value="3">联系方式</option>
+		<option value="4">邮箱</option>
+		<option value="5">状态</option>
+	</select>
+	<label class="navy_lbl">请输入您要查的信息:</lable><input type="text" id="member_search_zway" class="navy_ipt200" placeholder="请输入"></input> 
+	<a href="javascript:searchMemberInfo()" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+</div>
+
+<table id="member_data" data-options="fit:true" ></table>
+
+<div id="member_dialog" class="easyui-dialog" , data-options="resizable:true, modal:true, closed:true">
+	<div id="show_member_dialog_photo"></div>
+	<form id="member_form">
+		<ul>
+			<li> <label for="member_dialog_mid">编号：</label> <input type="text" id="member_dialog_mid" class="navy_ipt400"
+				></input> </li>
+			<li> <label for="member_dialog_nickName">昵称：</label> <input type="text" id="member_dialog_nickName" class="navy_ipt400"
+				></input> </li>
+			<li> <label for="member_dialog_realName">真实姓名：</label> <input type="text" id="member_dialog_realName" class="navy_ipt400"
+				></input> </li>
+			<li> <label for="member_dialog_tel">联系电话：</label> <input type="text" id="member_dialog_tel" class="navy_ipt400"
+				></input> </li>
+			<li> <label for="member_dialog_email">邮箱：</label> <input type="text" id="member_dialog_email" class="navy_ipt400"
+				></input> </li>
+		</ul>
+	</form>
+	
+	<style>
+		#member_form li {
+			list-style-type: none;
+			margin-top: 20px;
+			
+		}
+		
+		#member_form li> label {
+			width: 100px;
+			display: inline-block;
+			text-align: right;
+		}
+		
+		#show_member_dialog_photo {
+			border: 2px solid #ccc;
+			width: 200px;
+			height: 240px;
+			position: unset;
+			float: right;
+		}
+	</style>
+</div>  
+
+<script type="text/javascript">
+
+	var member_realName_obj = [{id:0, name:"正常"}, {id:1, name:"封禁"}]
+	var member_index = undefined;
+	var member_op;
+	var member_info;
+	
+	var member_obj = $('#member_data').datagrid({   
+	    url:'../../member',  
+	    queryParams:{op:"findByPage"},
+	    fitColumns: true,
+	    striped: true,
+	    loadMsg: "数据加载中...",
+	    pagination: true,
+	    pagePosition: "top",
+	    rownumbers: true,
+	    pageSize: 5,
+	    pageList: [5, 6, 7], 
+	    sorrealName: "mid",
+	    remoteSort: false,
+	    singleSelect: true,
+	    columns:[[   
+	        {field:'mid',title:'编号',width:30,align:'center', sortable:"true"},
+	        {field:'photo',title:'头像',width:100,align:'center', editor:{type:"text", formatter:function(val, row, index){
+	        	if (val) {
+	        		return "<img src='"+val+"' style='width:50px;heigth:50px;' />";
+	        	} else {
+	        		return null;
+	        	}
+	        }, options:{requeired: true}}},
+	        {field:'nickName',title:'昵称',width:100,align:'center', editor:{type:"text", options:{required:true}}},
+	        {field:'realName',title:'真实姓名',width:100,align:'center', editor:{type:"text", options:{required:true}}},   
+	        {field:'tel',title:'联系方式',width:100,align:'center', editor:{type:"text"}, options:{required:true}},
+	        {field:'email',title:'注册邮箱',width:100,align:'center', editor:{type:"text", options:{requeired: true}}},    
+	        {field:'status',title:'状态',width:50,align:'center', formatter:function(val, row, index){
+				if (val == 0) {
+					return '<font color="green">正常</font>';
+				} else {
+					return '<font color="red">封禁</font>';
+				}
+			}, editor:{type:"combobox", options:{required:true, valueField:"id", textField:"name", data:member_realName_obj}}},
+	        {field:'_operator', title:'操作', width: 100, align:"center", formatter: function(val, row, index){
+	        	return '<a href="javascript:showMemberInfoDetail('+ row.mid +')" class="navy-icon-detail">详细</a>';
+	        }}
+	    ]],
+	    toolbar: "#member_search",
+	    toolbar: [
+	    	{	
+	    		iconCls: 'icon-edit',
+	    		text: "修改",
+	    		handler: function(){
+	    			member_op = "update";
+	    			member_info = "修改";
+	    			
+	    			// 判定有没有正在修改的行
+	    			if( member_index != undefined){
+	    				return;
+	    			}
+	    			
+	    			//获取选中的行
+	    			var row = member_obj.datagrid("getSelected");
+	    			if(row == null) { // 说明没有选中的行
+	    				$.messager.show({
+    						title:'温馨提示',
+    						msg:'请选择您要修改的行',
+    						timeout:2000,
+    						showType:'slide'
+    					});
+	    		        return;
+	    			}
+	    			
+	    			// 获取选中的行的索引
+	    			member_index = member_obj.datagrid("getRowIndex", row);
+	    			
+	    			//开启编辑
+	    			member_obj.datagrid("beginEdit", member_index);
+	    		}
+	    },'-',{
+    		iconCls: 'icon-save',
+    		text: "保存",
+    		handler: function(){
+    			// 如果没有别编辑的行 直接返回
+    			if( member_index == undefined){
+    				return;
+    			}
+    			
+    			member_obj.datagrid("endEdit", member_index); // 结束编辑
+    			var row = member_obj.datagrid("getChanges")[0];  			
+    			if(row == undefined){
+    				member_index = undefined;
+    				return;
+    			}
+    			// 此时row是一个object，n那么js如何在对象中添加属性呢：：
+    			row.op = member_op;
+    			$.post("../../member", row, data =>{
+    				if( data.code == 200 ) {
+    					$.messager.show({
+    						title:'成功提示',
+    						msg:'会员信息'+member_info+'成功',
+    						timeout:2000,
+    						showType:'slide'
+    					});
+					member_obj.datagrid("reload"); // 重新加载数据，目的是重新分页
+						
+    				} else {
+    					//如果没有成功 则需要回滚数据
+    					member_obj.datagrid("rejectChanges");
+    					$.messager.alert('失败提示','会员信息'+member_info+'失败','error');
+    				}
+    				row = null;
+    				member_index = undefined;
+    			}, "json");
+    			
+    		}
+	    },'-',{
+	    	iconCls: 'icon-no',
+	    	text: "删除",
+	    	handler: function(){
+	    		member_op = "delete";
+    			member_info = "删除";
+    			
+    			// 获取选中的行
+				var row = member_obj.datagrid('getSelected');
+				if (row == null) {
+					$.messager.show({title:'温馨提示', msg:'请选择您要删除的会员...', timeout:2000, showType:'slide'});
+					return;
+				}
+				
+				if (row == undefined) {
+					member_index = undefined;
+					return;
+				}
+				
+				$.messager.confirm('Confirm', '您确定要删除?', function(r){
+					if (r){
+						// 此时row是一个Object,那么 js中 如何在 对象中 添加属性 呢？
+						//row.op = "add";	// row["op"] = "add"
+						row.op = member_op;
+						
+						// 将这一行数据发送到后台,插入到数据库中
+						// $.post("../../type", row, function(data){}, "json");
+						$.post("../../member", row, data => {
+							if (data.code == 200) {
+								$.messager.show({title:'成功提示', msg:'会员'+member_info+'成功...', timeout:2000, showType:'slide'});
+								// 刷新页面数据
+								member_obj.datagrid("reload");	// 重新加载数据,目的  重新分页
+							} else {
+								// 如果没有成功,则需要 回滚数据
+								member_obj.datagrid("rejectChanges");
+								$.messager.alert('失败提示', '会员'+member_info+'失败...', 'error');
+							}
+							row = null;
+							member_index = undefined;
+						}, "json");	
+					}
+				});
+	    	}
+	    },'-',{
+    		iconCls: 'icon-undo',
+    		text: "撤销",
+    		handler: function(){
+    			member_index = undefined;
+				member_obj.datagrid("rejectChanges")
+    		}
+	    }]
+	  
+	});  
+	
+	
+	function searchMemberInfo() {
+		var way = $.trim($("#member_search_way").val());
+		var zway = $.trim($("#member_search_zway").val());
+		member_obj.datagrid({
+			url: "../../member",
+			queryParams: {op:"findCondition", way:way, zway:zway}
+		})
+	}
+
+	
+	function showMemberInfoDetail(mid){
+		// 根据店铺编号查询详细信息
+		$.post("../../member", {op: "findByMid", mid: mid}, data => {
+			if (data.code == 200) {
+				//设置为只读
+				$("#member_form input").attr("readonly", "true");		
+				$("#member_dialog_mid").val(data.data.mid).attr("readonly", "true");
+				$("#member_dialog_nickName").val(data.data.nickName).attr("readonly", "true");
+				$("#member_dialog_realName").val(data.data.realName).attr("readonly", "true");
+				$("#member_dialog_tel").val(data.data.tel).attr("readonly", "true");
+				$("#member_dialog_email").val(data.data.email).attr("readonly", "true");
+				
+				var imgStr = "<img src='../../" + data.data.photo + "' width='200px' height='240px'/>";
+				$("#show_member_dialog_photo").html("").append($(imgStr));
+				
+				$("#member_dialog").dialog({
+					title: '用户详细信息',
+					fit: true,
+					maximizable: true,
+					buttons: [
+						{
+							text: "关闭",
+							iconCls: "icon-cancel",
+							handler: function() {
+								$("#member_dialog").dialog("close");
+							}
+						}
+					]
+				});
+				$('#member_dialog').dialog('open');
+			}
+		}, "json");
+	}
+	
+</script>

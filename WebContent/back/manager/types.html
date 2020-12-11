@@ -1,0 +1,161 @@
+<table id="types_data" data-options="fit:true" ></table>  
+	
+<script type="text/javascript">
+
+	var types_index = undefined;
+	var types_op;
+	var types_info;
+	
+	var types_obj = $('#types_data').datagrid({   
+	    url:'../../type',  
+	    queryParams:{op:"findByPage"},
+	    fitColumns: true,
+	    striped: true,
+	    loadMsg: "数据加载中...",
+	    pagination: true,
+	    rownumbers: true,
+	    pageSize: 5,
+	    pageList: [5, 10, 15], 
+	    sortName: "tid",
+	    remoteSort: false,
+	    singleSelect: true,
+	    columns:[[   
+	        {field:'tid',title:'父分类编号',width:100,align:'center', sortable:"true"},   
+	        {field:'tname',title:'父分类名称',width:100,align:'center', editor:{type:"text", options:{required:true}}}   
+	    ]],
+	    toolbar: [{
+	    	iconCls: 'icon-add',
+	    	text: "添加",
+	    	handler: function(){
+	    		types_op = "add";
+	    		types_info = "添加";
+	    		//判定有没有正在添加的行 有就直接返回
+	    		if( types_index != undefined){
+    				return;
+    			}
+	    		// 在表格的最前面插入一行
+	    		types_obj.datagrid("insertRow", {index: 0, row: {}});
+	    		types_index = 0;
+	    		types_obj.datagrid("beginEdit", types_index);
+	    	}	
+	    },'-',{
+	    		iconCls: 'icon-edit',
+	    		text: "修改",
+	    		handler: function(){
+	    			types_op = "update";
+	    			types_info = "修改";
+	    			
+	    			// 判定有没有正在修改的行
+	    			if( types_index != undefined){
+	    				return;
+	    			}
+	    			
+	    			//获取选中的行
+	    			var row = types_obj.datagrid("getSelected");
+	    			if(row == null) { // 说明没有选中的行
+	    				$.messager.show({
+    						title:'温馨提示',
+    						msg:'请选择您要修改的行',
+    						timeout:2000,
+    						showType:'slide'
+    					});
+	    		        return;
+	    			}
+	    			
+	    			// 获取选中的行的索引
+	    			types_index = types_obj.datagrid("getRowIndex", row);
+	    			
+	    			//开启编辑
+	    			types_obj.datagrid("beginEdit", types_index);
+	    		}
+	    },'-',{
+    		iconCls: 'icon-save',
+    		text: "保存",
+    		handler: function(){
+    			// 如果没有别编辑的行 直接返回
+    			if( types_index == undefined){
+    				return;
+    			}
+    			
+    			types_obj.datagrid("endEdit", types_index); // 结束编辑
+    			var row = types_obj.datagrid("getChanges")[0];  			
+    			if(row == undefined){
+    				types_index = undefined;
+    				return;
+    			}
+    			// 此时row是一个object，n那么js如何在对象中添加属性呢：：
+    			row.op = types_op;
+    			$.post("../../type", row, data =>{
+    				console.log(data.code);
+    				if( data.code == 200 ) {
+    					$.messager.show({
+    						title:'成功提示',
+    						msg:'父分类'+types_info+'成功',
+    						timeout:2000,
+    						showType:'slide'
+    					});
+					types_obj.datagrid("reload"); // 重新加载数据，目的是重新分页
+						
+    				} else {
+    					//如果没有成功 则需要回滚数据
+    					types_obj.datagrid("rejectChanges");
+    					$.messager.alert('失败提示','父分类'+types_info+'失败','error');
+    				}
+    				row = null;
+    				types_index = undefined;
+    			}, "json");
+    			
+    		}
+	    },'-',{
+	    	iconCls: 'icon-no',
+	    	text: "删除",
+	    	handler: function(){
+	    		type_op = "delete";
+    			type_info = "删除";
+    			
+    			// 获取选中的行
+				var row = types_obj.datagrid('getSelected');
+				if (row == null) {
+					$.messager.show({title:'温馨提示', msg:'请选择您要删除的父分类...', timeout:2000, showType:'slide'});
+					return;
+				}
+				
+				if (row == undefined) {
+					type_index = undefined;
+					return;
+				}
+				
+				$.messager.confirm('Confirm', '您确定要删除?', function(r){
+					if (r){
+						// 此时row是一个Object,那么 js中 如何在 对象中 添加属性 呢？
+						//row.op = "add";	// row["op"] = "add"
+						row.op = type_op;
+						
+						// 将这一行数据发送到后台,插入到数据库中
+						// $.post("../../type", row, function(data){}, "json");
+						$.post("../../type", row, data => {
+							if (data.code == 200) {
+								$.messager.show({title:'成功提示', msg:'会员'+type_info+'成功...', timeout:2000, showType:'slide'});
+								// 刷新页面数据
+								types_obj.datagrid("reload");	// 重新加载数据,目的  重新分页
+							} else {
+								// 如果没有成功,则需要 回滚数据
+								types_obj.datagrid("rejectChanges");
+								$.messager.alert('失败提示', '会员'+type_info+'失败...', 'error');
+							}
+							row = null;
+							type_index = undefined;
+						}, "json");	
+					}
+				});
+	    	}
+	    },'-',{
+    		iconCls: 'icon-undo',
+    		text: "撤销",
+    		handler: function(){
+    			types_index = undefined;
+    			types_obj.datagrid("rejectChanges")
+    		}
+	    }]
+	});  
+</script>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>happymmall电商平台</title>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="css/layout.css">
+</head>
+<style type="text/css" >
+#cart-table {
+    width: 100%;
+    padding-left: 20px;
+}
+#cart-footer{
+    background: #eee;
+
+}
+</style>
+<body>
+	<!--header-->
+	<div class="crumb">
+		<div class="w">
+			<div class="crumb-con">
+				<a class="link" href="./index.html">首页</a>
+				<span>>我的购物车</span>
+				<span class="link-text"></span>
+			</div>
+		</div>
+	</div>
+	<div class="cart-wrap w" id="cart_wo">
+		<div class="cart-header">
+			<table calss="cart-table" id="cart-table">
+				<tbody>
+					<tr>
+						<th class="cart-cell cell-check">
+							<label>
+								<input type="checkbox" class="cart-select-all" @click="selectAll" v-model="checkAll">
+								<span>全选</span>
+							</label>
+						</th>
+						<th class="cart-cell cell-info">商品信息</th>
+						<th class="cart-cell cell-price">单价</th>
+						<th class="cart-cell cell-count" id="count_header">数量</th>
+						<th class="cart-cell cell-total">合计</th>
+						<th class="cart-cell cell-opera">操作</th>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="cart-list">
+			<table class="cart-table" data-product-id="26" data-checked="1">
+				<tbody>
+					<tr v-for="(cart,index) in carts">
+						<td class="cart-cell cell-check">
+							<input type="checkbox" class="cart-select" v-model="checkbox_item" :value="cart.cartId+'_'+cart.price+'_'+index">
+						</td>
+						<td class="cart-cell cell-img">
+							<a><img class="p-img" :src="cart.pics" :alt="cart.sname"></a>
+						</td>
+						<td class="cart-cell cell-info">
+							<a class="link p-name" href="">{{cart.sname}} / {{cart.attrvalue}}</a>
+						</td>
+						<td class="cart-cell cell-price" >
+							{{cart.price}}
+						</td>
+						<td class="cart-cell cell-count">
+							<span class="count-btn" data-opera-type="minus" @click="count_minus(index)" >-</span>
+							<input class="count-input" data-max="118176" :value="cart.num">
+							<span class="count-btn" data-opera-type="plus" @click="count_add(index)" >+</span>
+						</td>
+						<td class="cart-cell cell-total">{{cart.price * cart.num}}</td>
+						<td class="cart-cell cell-opera"><a class="link cart-delete" @click="remove(index)">删除</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="cart-footer clear" id="cart-footer">
+			<div class="select-con">
+				<label>
+					<input type="checkbox" class="cart-select-all" @click="selectAll" v-model="checkAll">
+					<span>全选</span>
+				</label>
+			</div>
+			<div class="delete-con">
+				<a class="cart-delete-seleced link">
+					<i class="fa fa-trash-o" aria-hidden="true"></i>
+					<span @click="deleteAll">删除选中</span>
+				</a>
+			</div>
+			<div class="submit-con">
+				<span>总价：</span>
+				<span class="submit-total">{{totalPrice}}</span>
+				<span>已选商品：</span>
+				<span class="submit-total">￥{{sumPrice}} / {{totalCount}}</span>
+				<a class="settlement" @click="settlement"><span class="btn submit-btn" >去结算</span></a>
+			</div>
+			&nbsp
+		</div>
+	</div>
+	<!--footer-->
+	<div class="footer">
+		<div class="w">
+			<div class="links">
+				<a class="link" href="http://www.imooc.com" target="_blank">慕课网</a> |
+				<a class="link" href="https://www.baidu.com" target="_blank">百度</a> |
+				<a class="link" href="https://www.taobao.com" target="_blank">淘宝</a> |
+				<a class="link" href="https://www.zhihu.com" target="_blank">知乎</a>
+			</div>
+			<p class="copyright">
+				Copyright © 2020 haier.com All Right Reserved
+			</p>
+		</div>
+	</div>
+<!--footer-->
+<script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<script type="text/javascript" src="js/qs.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript">
+var cw = new Vue({
+	el: '#cart_wo',
+	data: {
+		checkAll: false,
+		checkbox_item: [],
+		carts: [],
+		sumPrice: 0,
+		totalCount: 0
+	},
+	watch:{
+		checkbox_item() {
+			if (this.checkbox_item.length == this.carts.length) {
+		　　　　　　this.checkAll=true;
+				this.sum();
+		　　　} else {
+		　　　　　　this.checkAll=false;
+				this.sum();
+		　　　}
+		}
+	},
+	computed: {
+		totalPrice: function() {
+			var total = 0;
+            for(var i=0; i < this.carts.length; i++){
+                var item = this.carts[i];
+                total += item.price * item.num;
+            }
+            return total.toString();
+		}
+	},
+	mounted: function () {
+		axios.get("member", {params: {op:"check"}}).then(rt => {
+			if (rt.status == 200 && rt.data.code == 500) {
+				location.href="user-login.html";
+				return;
+			}
+			var mid = rt.data.data.mid;
+			axios.get("shopcart", {params: {op:"findAllByMid", mid:mid}}).then(rt => {
+				this.carts = rt.data;
+			}, "json");
+		}, "json");
+	},
+	methods: {
+		count_add: function(index) {
+			this.carts[index].num++;
+			var num = this.carts[index].num;
+			var cartId = this.carts[index].cartId;
+			axios.get("shopcart", {params: {op:"update", num:num, cartId:cartId}}).then(rt => {
+				this.sum();
+			}, "json");
+			
+		},
+		count_minus: function(index) {
+			if(this.carts[index].num > 1){
+				this.carts[index].num--;
+				var num = this.carts[index].num;
+				var cartId = this.carts[index].cartId;	
+				axios.get("shopcart", {params: {op:"update", num:num, cartId:cartId}}).then(rt => {
+					this.sum();
+				}, "json");
+			}	
+		},
+		remove: function(index) {
+			var cartIds = this.carts[index].cartId;
+			
+			axios.get("shopcart", {params: {op:"delete", cartIds:cartIds}}).then(rt => {
+				if (rt.status == 200 && rt.data.code == 200) {
+					this.carts.splice(index,1);
+				}
+			}, "json");
+		},
+		deleteAll: function() {
+			if (this.checkbox_item.lenght == 0) {
+				return;
+			}
+			var cartIds = [];
+			this.checkbox_item.forEach((item) => {
+				var str = item.split("_");
+				cartIds.push(str[0]);
+			});
+			cartIds = cartIds.toString();
+			axios.get("shopcart", {params: {op:"delete", cartIds:cartIds}}).then(rt => {
+				if (rt.status == 200 && rt.data.code == 200) {
+					location.href = "cart.html";
+				}
+			}, "json");
+		},
+		selectAll: function() {
+			if (this.checkAll) {
+				this.checkbox_item = [];
+			} else {
+				this.checkbox_item = [];
+				for(var i=0; i < this.carts.length; i++){
+	                var item = this.carts[i];
+	                this.checkbox_item.push(item.cartId+"_"+item.price+"_"+i);
+	            }
+			}
+		},
+		sum: function(){
+			this.sumPrice= 0 ;
+			this.totalCount= 0 ;
+			this.checkbox_item.forEach((item)=>{
+				var str = item.split("_");
+				this.sumPrice += this.carts[str[2]].price * this.carts[str[2]].num;
+				this.totalCount += this.carts[str[2]].num;
+			})
+		},
+		settlement: function() {
+			if (this.checkbox_item.length == 0) {
+				return;
+			}
+			var ids = "";
+			this.checkbox_item.forEach((item)=>{
+				var str = item.split("_");
+				ids += str[0]+"_";
+			})
+			location.href = "myorder.html?"+ids+"";
+		}
+	}
+});
+</script>
+</body>
+</html>

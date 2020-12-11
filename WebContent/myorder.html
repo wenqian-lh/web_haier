@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>电器商城</title>
+		<link rel="stylesheet" href="css/nav.css">
+		<link rel="stylesheet" href="css/footer.css">
+		<link rel="stylesheet" href="css/header.css">
+		<link rel="stylesheet" href="css/cart.css">
+		<link rel="stylesheet" href="css/layout.css">
+		
+		
+	</head>
+	<style type="text/css">
+		#cart-table {
+			width: 100%;
+			padding-left: 20px;
+		}
+
+		#cart-footer {
+			background: #eee;
+
+		}
+
+		.cart-wrap .cart-table .cell-info {
+			width: 265px;
+			padding: 0 10px;
+		}
+		dt {
+			font-size: 14px;
+   		    line-height: 30px;
+    		text-indent: 30px;
+    		font-weight: bold;
+		}
+		dd {
+			font-size: 14px;
+    		line-height: 30px;
+   			 text-indent: 30px;
+		}
+		
+		.main_center{
+			width: 350px;
+			position:fixed;
+			top: 50px;
+			left: 370px;
+			background-color: white;
+			border: 4px solid #FFFFFF;
+		}
+		.main_dis{
+			display:none;
+		}
+		.header_center label {
+			margin-left: 20px;
+			font-size: 25px;
+		}
+		li {
+			list-style: none;
+			height: 50px;
+		}
+		.main_center li label {
+			float: left;
+			font-size: 15px;
+			color: #999999;
+			line-height: 35px;
+			width: 200px;
+		}
+		
+		.main_center li input {
+			float: left;
+			width:200px;
+			height: 25px;
+			margin-left: -100px;
+		}
+		.main_center li select {
+			width: 200px;
+			height: 30px;
+			margin-left: -100px;
+		}
+		#address_detail{}
+		#address_save {
+			width: 260px;
+			height: 40px;
+			text-align: center; 
+			margin-left: 20px; 
+			background-color: #C60023;
+			border: #C60023 0px solid;
+			font-size: 20px;
+			font-weight: 800;
+		}
+		.footer{
+			border-top:2px solid #C60023;
+			margin:30px 0;
+		}
+		
+		#address_item:hover{
+			color: "#FF8800";
+		}
+		#add-place {
+			margin-left: 29px;
+			font-size: 18px;
+		}
+		.mask {
+			position:fixed;
+			top: 0px;
+			left: 0px;
+			width:100%;
+			height: 100%;
+			background-color: #000000;
+			opacity: 0.6;
+		}
+		.all_place {
+			display:none;
+		}
+		
+		#cell-counts {
+			width: 150px;
+		}
+		#cell-totals {
+			text-align: center;
+		}
+	</style>
+	<body >
+		<div id="order_vue">
+		<!--header-->
+		<div class="crumb">
+			<div class="w">
+				<div class="crumb-con">
+					<a class="link" href="./index.html">首页</a>
+					<span>>我的订单</span>
+					<span class="link-text"></span>
+				</div>
+			</div>
+		</div>
+		<div class="w">
+				<dl>
+						<dt>收货地址：</dt>                      
+                            <dd v-if="onaddress == ''">
+                            	无默认地址
+                            </dd>
+                            <dd v-else style="margin-left: 50px;" >
+                            {{onaddress.name}} <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{onaddress.tel}} <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{onaddress.province}} - {{onaddress.city}} - {{onaddress.area}}   {{onaddress.addr}}                        	
+                            </dd>                    
+                </dl>
+                <dl id="all_place" class="all_place">
+						<dt>所有地址：<a href="#" @click="off_address" style="margin-left: 350px;">收起</a> </dt>
+                        
+                            <dd v-for="(addr,index) in addressinfo" style="cursor:pointer;" >
+                            		{{addr.name}} {{addr.tel}} {{addr.province}} - {{addr.city}} - {{addr.area}}   {{addr.addr}}
+                             		<a id="delete_place" style="margin-left: 20px" @click="select_place(index)">选择</a>
+                            </dd>
+                </dl> 
+                <a id="address_replace" href="#" style="margin-left: 30px;" @click="replace_address">更换收货地址</a>
+                <a id="address_admin" href="place.html" style="margin-left: 800px;">管理收货地址</a>
+		</div>
+		<div class="cart-wrap w" id="cart_select">
+			<div class="cart-header">
+				<table calss="cart-table" id="cart-table">
+					<tbody>
+						<tr>
+							<th class="cart-cell cell-info">商品信息</th>
+							<th class="cart-cell cell-price">单价</th>
+							<th class="cart-cell cell-count" id="cell-counts">数量</th>
+							<th class="cart-cell cell-total" id="cell-totals">合计</th>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="cart-list">
+		<table class="cart-table" data-product-id="26" data-checked="1">
+			<tbody>
+				<tr v-for="(cart,index) in carts">
+					<td class="cart-cell cell-img">
+						<a><img class="p-img" :src="cart.pics" :alt="cart.sname"></a>
+					</td>
+					<td class="cart-cell cell-info">
+						<a class="link p-name" href="">{{cart.sname}} / {{cart.attrvalue}}</a>
+					</td>
+					<td class="cart-cell cell-price">
+						￥{{cart.price}}
+					</td>
+					<td class="cart-cell cell-count">
+						<label class="count-input" data-max="118176" style="border: none;">{{cart.num}}</label>
+					</td>
+					<td class="cart-cell cell-total">￥{{cart.price * cart.num}}</td>
+				</tr>
+			</tbody>
+		</table>
+		</div>
+		<div class="cart-footer clear" id="cart-footer">
+			<div class="submit-con">
+				<span>总价：</span>
+				<span class="submit-total">{{totalPrice}}</span>
+				<span class="btn submit-btn" onclick="./order.html">支付</span>
+			</div>
+			&nbsp
+		</div>
+		</div>
+			<!--footer-->
+		<div class="footer">
+			<div class="w">
+				<div class="links">
+					<a class="link" href="http://www.imooc.com" target="_blank">慕课网</a> |
+					<a class="link" href="https://www.baidu.com" target="_blank">百度</a> |
+					<a class="link" href="https://www.taobao.com" target="_blank">淘宝</a> |
+					<a class="link" href="https://www.zhihu.com" target="_blank">知乎</a>
+				</div>
+				<p class="copyright">
+					Copyright © 2020 haier.com All Right Reserved
+				</p>
+			</div>
+		</div>
+		<div id="mask_div"></div>
+		<div class="main_dis" id="address_editor">
+					<h2>新增地址</h2>
+					<ul>
+						<li>
+							<label >收件人姓名：</label>
+							<input id="address_name" type="text" v-model="name" />
+						</li>
+						<li>
+							<label >联系方式：</label>
+							<input id="address_tel" type="text" v-model="tel" />
+						</li>
+						<li>
+							<label>省:</label>
+							<select  id="select_address_province" v-model="province" ></select>					
+						</li>
+						<li>
+							<label>市:</label>
+							<select id="select_address_city" v-model="city" ></select>
+						</li>
+						<li>
+							<label>县(区)：</label>
+							<select id="select_address_area" v-model="area" ></select>
+						</li>
+						<li>
+							<label >详细地址：</label>
+							<input  id="address_detail" type="text" v-model="addr" />
+						</li>
+						<li>
+							<button  id="address_save" @click="add" >保存</button>
+						</li>
+					</ul>
+					<div class="popup_con">
+							<div class="popup">
+								<p id="popup_info"></p>
+							</div>
+						</div>
+				</div>
+		</div>
+	
+		<script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/qs.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script  type="text/javascript" src="js/addr.js"></script>
+		<script  type="text/javascript" src="js/tk.js"></script>
+		<script type="text/javascript">
+			var order = new Vue({
+				el: "#order_vue",
+				data: {
+					onaddress: [],
+					addressinfo: {},
+					name: "",
+					tel: "",
+					province: "",
+					city: "",
+					area: "",
+					addr: "",
+					cartIds: [],
+					carts: [],
+					sumPrice: 0,
+					totalCount: 0
+				},
+				computed: {
+					totalPrice: function() {
+						var total = 0;
+			            for(var i=0; i < this.carts.length; i++){
+			                var item = this.carts[i];
+			                total += item.price * item.num;
+			            }
+			            return total.toString();
+					}
+				},
+				mounted: function() {
+					let ids = location.search;
+					ids = ids.replace("?","");
+					this.cartIds = ids.split("_");
+					cartIds = this.cartIds.toString();
+					
+					// 显示订单表
+					axios.post("shopcart", qs.stringify({op:"findAllByCartId", cartIds:cartIds})).then(rt => {
+						this.carts = rt.data;
+					}, "json");
+					
+					// 检查地址信息，没有则弹出添加界面
+					bindAddr("xml/city.xml");
+					axios.post("address", qs.stringify({op: "findAll"})).then(rt => {
+						if(rt.data.length < 1) {
+							$("#address_editor").removeClass("main_dis");
+							$("#address_editor").addClass("main_center");
+							$("#mask_div").addClass("mask");
+						} else {
+							$("#address_editor").removeClass("main_center");
+							$("#address_editor").addClass("main_dis");
+							$("#mask_div").removeClass("mask");
+						}
+    					this.addressinfo = rt.data;
+    					for(var i = 0, len = this.addressinfo.length; i < len; i ++) {
+    						if(this.addressinfo[i].status == 1){
+    							this.onaddress = this.addressinfo[i];					
+    							return;
+    						}
+    					}
+    					this.onaddress = this.addressinfo[0];
+    				})
+				},
+				methods: {
+					add: function() {
+						axios.post("address", qs.stringify({op: "add", name: this.name, tel: this.tel, province: this.province, city: this.city, area: this.area, addr: this.addr})).then( rt => {
+							if(rt.data == 200) {
+								showMsg("地址信息添加成功", "green", function() {
+									location.href="myorder.html";
+								});							
+								return;
+							}
+							showMsg("地址信息添加失败", "red");
+						})
+					},
+					replace_address: function() {  // 展开地址选择框
+						$("#all_place").removeClass("all_place");
+					},
+					off_address: function() { // 收起地址选择框
+						$("#all_place").addClass("all_place");
+					},
+					select_place: function(addrId) {  // 选择地址事件
+						this.onaddress = this.addressinfo[addrId];	
+						$("#all_place").addClass("all_place");
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

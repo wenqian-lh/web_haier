@@ -1,0 +1,308 @@
+<div id="admin_search">     
+     <label class="navy_lbl">账号状态:</label>
+     <select id="admin_search_status" class="navy_slt200">
+     	<option value="">--请选择--</option>
+     	<option value="0">正常</option>
+     	<option value="1">封禁</option>
+     </select>
+     <label class="navy_lbl">搜索条件:</label>
+     <select id="admin_search_by" class="navy_slt200">
+     	<option value="0">管理员名称</option>
+     	<option value="1">管理员电话</option>
+     </select>
+     <label class="navy_lbl">搜索：</label> <input type="text" id="admin_search_text" class="navy_ipt200" placeholder="请输入关键字"></input>
+     <a id="btn" href="javascript:searchAdminInfo()" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="searchAdminInfo()">查询</a>  
+</div>
+
+<table id="admin_info"></table>  
+
+<script type="text/javascript">
+var admin_status = [{id:0, name:"正常"}, {id:2, name:"禁止使用"}];
+var admin_index = undefined;
+var admin_op;
+var admin_info;
+
+var admin_obj = $('#admin_info').datagrid({   
+    url:'../../admin', 
+    queryParams:{op:"findByPage"},
+	fitColumns: true, 
+	pagination: true,
+	pagePosition: 'bottom',
+	singleSelect: true,
+	striped: true,
+    columns:[[   
+        {field:'adminId',title:'管理员编号',width:100, },   
+        {field:'aname',title:'管理员名称',width:100, editor:{type:"text", options:{required:true}}},   
+        {field:'tel',title:'电话',width:100, editor:{type:"text"}}, 
+        {field:'pwd',title:'密码',width:100, editor:{type:"text"}}, 
+        {field:'status',title:'status',width:100,align:'right',formatter: function(value,row,index){
+			if (value == 0){
+				return "<font color='grenn'>正常</font>";
+			} else {
+				return "<font color='red'>以禁止使用</font>";
+			}
+		  },  editor:{type:"combobox", options:{required:true,valueField: "id", textField: "name", data: admin_status}}
+	   } 
+    ]],
+    toolbar: [{
+		iconCls: 'icon-add',
+		text: "添加",
+		handler: function(){
+			admin_op = "add";
+    		admin_info = "添加";
+    		//判定有没有正在添加的行 有就直接返回
+    		if( admin_index != undefined){
+				return;
+			}
+    		// 在表格的最前面插入一行
+    		admin_obj.datagrid("insertRow", {index: 0, row: {}});
+    		admin_index = 0;
+    		admin_obj.datagrid("beginEdit", admin_index);
+		}
+	},'-',{
+		iconCls: 'icon-edit',
+		text: "修改",
+		handler: function(){
+			admin_op = "update";
+			admin_info = "修改";
+			//判定有没有正在添加的行 有就直接返回
+    		if(admin_index != undefined){
+				return;
+			}
+    		//获取选中的行
+			var row = admin_obj.datagrid("getSelected");
+			if(row == null) { // 说明没有选中的行
+				$.messager.show({
+					title:'温馨提示',
+					msg:'请选择您要修改的行',
+					timeout:2000,
+					showType:'slide'
+				});
+		        return;
+			}
+			// 获取选中的行的索引
+			admin_index = admin_obj.datagrid("getRowIndex", row);
+    		admin_obj.datagrid("beginEdit", admin_index);
+		}
+	},'-',{
+		iconCls: 'icon-no',
+		text: "删除",
+		handler: function(){
+			if(admin_index != undefined) {
+				console.log("请先选择");
+				return;
+			}
+			//获取选中的行
+			var row = admin_obj.datagrid("getSelected");
+			if(row == null) { // 说明没有选中的行
+				$.messager.show({
+					title:'温馨提示',
+					msg:'请先选择您要删除的行',
+					timeout:2000,
+					showType:'slide'
+				});
+		        return;
+			}
+			$.post("../../admin",{op:'delete', adminId:row.adminId}, data => {
+				if(data.code == 200 && data.msg == "success") {
+					$.messager.show({
+						title:'提示',
+						msg:'管理员删除成功',
+						timeout:3000,
+						showType:'slide'
+					});
+					admin_obj.datagrid("reload"); // 重新加载数据，目的是重新分页
+					
+				} else {
+					//如果没有成功 则需要回滚数据
+					admin_obj.datagrid("rejectChanges");
+					$.messager.alert('失败提示','管理员删除失败','error');
+				}
+				row = null;
+			})
+		}
+	},'-',{
+		iconCls: 'icon-save',
+		text: "保存",
+		handler: function(){
+			if(admin_index == undefined) {
+				return;
+			}
+			admin_obj.datagrid("endEdit", admin_index); // 结束编辑
+			var row = admin_obj.datagrid("getChanges")[0];  			
+			if(row == undefined){
+				admin_index = undefined;
+				return;
+			}
+			row.op = admin_op;
+			$.post("../../admin", row, data => {
+				if(data.code == 200 && data.msg == "success") {
+					$.messager.show({
+						title:'提示',
+						msg:'管理员'+admin_info+'成功',
+						timeout:3000,
+						showType:'slide'
+					});
+					admin_obj.datagrid("reload"); // 重新加载数据，目的是重新分页
+					
+				} else {
+					//如果没有成功 则需要回滚数据
+					admin_obj.datagrid("rejectChanges");
+					$.messager.alert('失败提示','管理员'+admin_info+'失败','error');
+				}
+				row = null;
+				admin_index = undefined;
+			}, "json");
+		}
+	},'-',{
+		iconCls: 'icon-undo',
+		text: "撤销",
+		handler: function(){
+			admin_index = undefined;
+			admin_obj.datagrid("rejectChanges");
+		}
+	}]
+});  
+
+// 按条件查询管理员信息
+function searchAdminInfo() {
+	var admin_status = $("#admin_search_status").val();
+	var admin_by = $("#admin_search_by").val();
+	var admin_text = $("#admin_search_text").val();
+	admin_obj.datagrid({
+		url: '../../admin',
+		queryParams:{op:"findByCondition", admin_status: admin_status, admin_by: admin_by, admin_text: admin_text}
+	})
+}
+
+</script>
+<!-- 
+
+	var admin_status = [{id:0, name:"禁用"}, {id:1, name:"正常"}];
+	var admin_index = undefined;
+	var admin_op;
+	var admin_info;
+	
+	var admin_obj = $('#admin_info').datagrid({   
+	    url:'../../admin',  
+	    queryParams:{op:"findByPage"},
+	    fitColumns: true,
+	    striped: true,
+	    loadMsg: "数据加载中...",
+	    pagination: true,
+	    rownumbers: true,
+	    pageSize: 5,
+	    pageList: [5, 6, 7], 
+	    remoteSort: false,
+	    singleSelect: true,
+	    columns:[[   
+	        {field:'adminId',title:'管理员账号',width:100,align:'center'},   
+	        {field:'aname',title:'管理员名称',width:100,align:'center', editor:{type:"text", options:{required:true}}},   
+	        {field:'pwd',title:'密码',width:100,align:'center', editor:{type:"text"}},   
+	        {field:'tel',title:'联系方式',width:100,align:'center', editor:{type:"text"}},
+	        {field:'status',title:'账号状态',width:100,align:'center', formatter:function(val, row, index){
+	        	if (val == 0) {
+	        		return "<font color='red'>正常</font>";
+	        	} else {
+	        		return "<font color='green'>禁用</font>";
+	        	}
+	        }, editor:{type:"combobox", options:{requeired: true, valueField: "id", textField: "name", data: admin_status}}}  
+	    ]],
+	    toolbar: [{
+	    	iconCls: 'icon-add',
+	    	text: "添加",
+	    	handler: function(){
+	    		admin_op = "add";
+	    		admin_info = "添加";
+	    		//判定有没有正在添加的行 有就直接返回
+	    		if( admin_index != undefined){
+    				return;
+    			}
+	    		// 在表格的最前面插入一行
+	    		admin_obj.datagrid("insertRow", {index: 0, row: {}});
+	    		admin_index = 0;
+	    		admin_obj.datagrid("beginEdit", admin_index);
+	    	}	
+	    },'-',{
+	    		iconCls: 'icon-edit',
+	    		text: "修改",
+	    		handler: function(){
+	    			admin_op = "update";
+	    			admin_info = "修改";
+	    			
+	    			// 判定有没有正在修改的行
+	    			if( admin_index != undefined){
+	    				return;
+	    			}
+	    			
+	    			//获取选中的行
+	    			var row = admin_obj.datagrid("getSelected");
+	    			if(row == null) { // 说明没有选中的行
+	    				$.messager.show({
+    						title:'温馨提示',
+    						msg:'请选择您要修改的行',
+    						timeout:2000,
+    						showType:'slide'
+    					});
+	    		        return;
+	    			}
+	    			
+	    			// 获取选中的行的索引
+	    			admin_index = admin_obj.datagrid("getRowIndex", row);
+	    			
+	    			//开启编辑
+	    			admin_obj.datagrid("beginEdit", admin_index);
+	    		}
+	    		},'-',{
+					iconCls: 'icon-no',
+					text: "删除",
+					handler: function() {
+						alert('help');
+						}
+				},'-',{
+		    		iconCls: 'icon-save',
+		    		text: "保存",
+		    		handler: function(){
+		    			// 如果没有别编辑的行 直接返回
+		    			if( admin_index == undefined){
+		    				return;
+		    			}
+		    			
+		    			admin_obj.datagrid("endEdit", admin_index); // 结束编辑
+		    			var row = admin_obj.datagrid("getChanges")[0];  			
+		    			if(row == undefined){
+		    				admin_index = undefined;
+		    				return;
+		    			}
+		    			// 此时row是一个object，n那么js如何在对象中添加属性呢：：
+		    			row.op = admin_op;
+		    			$.post("../../admin", row, data =>{
+		    				console.log(data.code);
+		    				if( data.code == 200 ) {
+		    					$.messager.show({
+		    						title:'成功提示',
+		    						msg:'商品类型'+admin_info+'成功',
+		    						timeout:2000,
+		    						showType:'slide'
+		    					});
+							admin_obj.datagrid("reload"); // 重新加载数据，目的是重新分页
+								
+		    				} else {
+		    					//如果没有成功 则需要回滚数据
+		    					admin_obj.datagrid("rejectChanges");
+		    					$.messager.alert('失败提示','商品类型'+admin_info+'失败','error');
+		    				}
+		    				row = null;
+		    				admin_index = undefined;
+		    			}, "json");
+		    			
+		    		}
+			    },'-',{
+		    		iconCls: 'icon-undo',
+		    		text: "撤销",
+		    		handler: function(){
+		    			
+		    		}
+			    }]
+			});  
+-->

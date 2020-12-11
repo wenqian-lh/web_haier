@@ -1,0 +1,349 @@
+<!-- 添加和按条件搜索商品 -->
+<div id="goods_search">
+	 <a id="btn" href="javascript:showAddgoodsInfoDialog()" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true"  >添加</a>  
+     <hr />
+     <label class="navy_lbl">品类:</label>
+     <select id="goods_search_tid" class="navy_slt200" style="width:100px;" onchange="getPtypes('#goods_search_tid', '#goods_search_pid')" >
+     		
+     </select>
+      <label class="navy_lbl">类别:</label>
+     <select id="goods_search_pid" class="navy_slt200" style="width:100px;"></select>
+     <label class="navy_lbl">商品状态:</label>
+     <select id="goods_search_status" class="navy_slt200" style="width:100px;">
+     	<option value="">--请选择--</option>
+     	<option value="0">下架</option>
+     	<option value="1">正常</option>
+     	<option value="2">缺货</option>
+     </select>
+      <label class="navy_lbl">商品名称：</label> <input type="text" id="goods_search_gname" class="navy_ipt200" placeholder="请输入商品名称"></input>
+     	 <a id="btn" href="javascript:searchgoodsInfo()" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="searchgoodsInfo()">查询</a>  
+</div>
+
+<!-- 添加商品和显示详细信息的窗口  -->
+<div id="goods_dialog" class="easyui-dialog", data-options="resizable:true, modal:true, closed:true">
+	<form id="goods_form" >
+		<ul>
+		 	<li> <label>品类：</label> <select id="goods_dialog_tid" class="navy_ipt400" onchange="getPtypes('#goods_dialog_tid', '#goods_dialog_pid')"></select> </li>
+		 	<li> <label>类别：</label> <select id="goods_dialog_pid" class="navy_ipt400" ></select> </li>
+		 	<li> <label class="navy_lbl">商品状态:</label>
+			     <select id="goods_dialog_status" class="navy_slt200">
+			     	<option value="">--请选择--</option>
+			     	<option value="0">下架</option>
+     				<option value="1">正常</option>
+     				<option value="2">缺货</option>
+			     </select>
+			 </li>
+			<li> <label for="goods_dialog_gname">商品名称：</label> <input type="text" id="goods_dialog_gname" class="navy_ipt400" placeholder="请输入商品名称"></input> </li>
+			<li> <label for="goods_dialog_price">商品价格：</label> <input type="text" id="goods_dialog_price" class="navy_ipt400" placeholder="请输入商品价格"></input> </li>
+			<li class="myli"> <label>商品图片：</label> <input type="file" id="goods_dialog_pics" name="pics" multiple="multiple" onchange="setImagePreviews(this, 'show_goods_dialog_pics', 300, 200)"></input> </li>
+			<li id="show_goods_dialog_pics" class="myli"> </li>
+			<li class="myli"> <label>商品简介：</label> <input type="file" id="goods_dialog_intro" name="intro" multiple="multiple" onchange="setImagePreviews(this, 'show_goods_dialog_intro', 300, 200)"></input> </li>
+			<li id="show_goods_dialog_intro" class="myli"> </li>
+		</ul>
+	</form>
+	
+	
+	<style>
+		#goods_form li {
+			list-style-type: none;
+			margin-top: 20px;
+		}
+		
+		#goods_form .myli {
+			width: 100%;
+		}
+		
+		#goods_form li> label {
+			width: 100px;
+			display: inline-block;
+			text-align: right;
+		}
+		#show_goods_dialog_pics {
+			height: 100px;
+		}
+	</style>
+</div>  
+<hr />
+<table id="goods_info">    </table>  
+
+<script type="text/javascript">
+
+var goods_obj = $('#goods_info').datagrid({   
+    url:'../../goods',
+    queryParams:{op:"findByPage"},
+	fitColumns: true, 
+	pagination: true,
+	pagePosition: 'bottom',
+	singleSelect: true,
+	striped: true,
+    columns:[[   
+        {field:'gid',title:'商品编号',width:100,align:'center'},   
+        {field:'sname',title:'商品名称',width:100,align:'center'},   
+        {field:'tid',title:'品类',width:100,align:'center'},
+        {field:'pid',title:'类型',width:100,align:'center'},
+        {field:'price',title:'价格',width:100,align:'center'},
+        {field:'status',title:'状态',width:100,align:'center', formatter: function(val, row, index){
+        	if(val == 1) {
+        		return "<font color='green'>正常</font>";
+        	} else if(val == 2) {
+        		return "<font color='red'>缺货</font>";
+        	} else {
+        		return "<font color='red'>下架</font>";
+        	}
+        }},
+        {field:'_operator', title:'操作', width: 100, align:"center", formatter: function(val, row, index){
+        	return '<a href="javascript:showUpdategoodsInfoDialog('+ row.gid +')" class="navy-icon-edit">修改</a>&nbsp;<a href="javascript:showgoodsInfoDetail('+ row.gid +')" class="navy-icon-detail">详细</a>';
+        }}
+    ]]   
+});  
+
+// 父类型显示
+let type_vue = new Vue({
+	el: "#goods_search",
+	data: {
+		types: {}
+	},
+	mounted: function() {
+		axios.post("../../type", qs.stringify({op: "findAll"})).then( rt => {
+			this.types = rt.data;
+			var str = '<option value="">-- 请选择 --</option>';
+			$.each(this.types, function(index, item){
+				str += '<option value="'+ item.tid +'">'+ item.tname +'</option>';
+			})
+			$("#goods_search_tid").html("").append($(str));
+			$("#goods_dialog_tid").html("").append($(str));
+		})
+	}
+})
+
+// 父类型的显示和子类型的级联显示
+function getPtypes(type_select, ptype_select) {
+	var type = $(type_select).val();
+	var str = "";
+	$.post("../../ptype", {op:"findCondition", tid:type, page: "1", rows: "100"}, data => {
+		var ptypes = data.rows;
+	    str = '<option value="">-- 请选择 --</option>';
+		$.each(ptypes, function(index, item){
+			str += '<option value="'+ item.pid +'">'+ item.pname +'</option>';
+		})
+		$(ptype_select).html("").append(str);
+		str = "";
+	}, "json");	
+}
+
+//添加商品信息的方法
+function showAddgoodsInfoDialog(){
+	$("#goods_form input, #goods_form textarea").removeAttr("readonly");
+	$("#goods_form select").removeAttr("disabled");
+	$("#goods_form")[0].reset(); // 表单重置 [0]相当于是将jquery对象转成js对象 $(obj) -> js对象转jquery对象
+	$("#show_goods_dialog_pics").html("");
+	$("#show_goods_dialog_intro").html("");
+	$("#goods_dialog_tid, #goods_dialog_pid").val("");
+	$('#goods_dialog').dialog({
+		title: '添加店铺信息',
+		fit: true,
+		buttons: [
+			{
+				text: "添加",
+				iconCls: "icon-ok",
+				handler: function() {
+					goods_addInfo();
+				}
+			}, {
+				text: "取消",
+				iconCls: "icon-cancel",
+				handler: function() {
+					$('#goods_dialog').dialog('close');
+				}
+			}
+		]
+	})
+	$('#goods_dialog').dialog('open');
+}
+
+//修改商品信息的方法
+function showUpdategoodsInfoDialog(gid) {
+	$.post("../../goods", {op: "findByGid", gid: gid}, data => {
+		if (data.code == 200) {
+			// 移除只读属性
+			$("#goods_form input, #goods_form textarea").removeAttr("readonly");
+			$("#goods_form select").removeAttr("disabled");
+			// 注值
+			$("#goods_dialog_tid").val(data.data.tid);
+			findByType(data.data.pid);
+			$("#goods_dialog_status").val(data.data.status);
+			$("#goods_dialog_gname").val(data.data.sname);
+			$("#goods_dialog_price").val(data.data.price);						
+			var imgStr = "";
+			var pics = data.data.pics.split(";");
+			for (var i = 0, len = pics.length; i < len; i++){
+				 imgStr += "<img src='../../" + pics[i] + "' width='100px' height='100px'/>&nbsp";
+			}
+			$("#show_goods_dialog_pics").html("").append($(imgStr));
+			imgStr = "";
+			var intro = data.data.intro.split(";");
+			for (var i = 0, len = intro.length; i < len; i++){
+				 imgStr += "<img src='../../" + intro[i] + "' width='100px' height='100px'/>&nbsp";
+			}
+			$("#show_goods_dialog_intro").html("").append($(imgStr));
+			$("#goods_dialog").dialog({
+				title: '商品详细信息',
+				fit: true,
+				maximizable: true,
+				buttons: [
+					{
+						text: "修改",
+						iconCls: "icon-ok",
+						handler: function() {
+							goods_updateInfo(gid);
+						}
+					},
+					{
+						text: "关闭",
+						iconCls: "icon-cancel",
+						handler: function() {
+							$("#goods_dialog").dialog("close");
+						}
+					}
+				]
+			});
+			$('#goods_dialog').dialog('open');
+		}
+	}, "json");
+}
+
+// 添加商品的方法
+function goods_addInfo() {
+	var tid = $.trim($("#goods_dialog_tid").val());
+	var pid = $.trim($("#goods_dialog_pid").val());
+	var status = $.trim($("#goods_dialog_status").val());
+	var sname = $.trim($("#goods_dialog_gname").val());
+	var price = $.trim($("#goods_dialog_price").val());
+	var pics = $.trim($("#goods_dialog_pics").val()); // 商品图片
+	var detail = $.trim($("#goods_dialog_intro").val()); 
+	var obj = {op: "add", tid: tid, pid: pid, status: status, sname: sname, price: price, pics: pics, intro: detail};
+	console.log(obj);
+	$.ajaxFileUpload({
+		url: "../../goods?op=add",
+		secureuri: false,
+		fileElementId: ["goods_dialog_pics", "goods_dialog_intro"], 
+		dataType: "json", // 数据格式
+		data: obj, //要发送的数据
+		success: function(data, status) {
+			console.log(data);
+			console.log(status);
+			if(data.code == 200) {
+				goods_obj.datagrid("reload"); // 重新加载数据
+				$("#goods_dialog").dialog("close"); // 关闭弹出框
+				$.messager.show({title: "成功提示", msg: "商品信息添加成功", timeout: 2000, showType:"slide"});
+			} else {
+				$.messager.alert("失败提示", "商品信息添加失败", "error");
+			}
+		},
+		error: function(data, status, e) {
+			$.messager.alert("失败提示", "商品信息添加失败...\n" + e, "error");
+		}
+	}); 
+}
+
+// 修改商品信息的方法
+function goods_updateInfo(gid) {
+	
+	var tid = $.trim($("#goods_dialog_tid").val());
+	var pid = $.trim($("#goods_dialog_pid").val());
+	var status = $.trim($("#goods_dialog_status").val());
+	var sname = $.trim($("#goods_dialog_gname").val());
+	var price = $.trim($("#goods_dialog_price").val());
+	var pics = $.trim($("#goods_dialog_pics").val()); // 商品图片
+	var detail =  $.trim($("#goods_dialog_intro").val()); // 获取富文本编辑器的内容
+	var obj = {op: "add", gid: gid, tid: tid, pid: pid, status: status, sname: sname, price: price, pics: pics, intro: detail};
+	$.ajaxFileUpload({
+		url: "../../goods?op=update",
+		secureuri: false,
+		fileElementId: ["goods_dialog_pics", "goods_dialog_intro"], 
+		dataType: "json", // 数据格式
+		data: obj, //要发送的数据
+		success: function(data, status) {
+			console.log(data);
+			console.log(status);
+			if(data.code == 200) {
+				goods_obj.datagrid("reload"); // 重新加载数据
+				$("#goods_dialog").dialog("close"); // 关闭弹出框
+				$.messager.show({title: "成功提示", msg: "商品信息修改成功", timeout: 2000, showType:"slide"});
+			} else {
+				$.messager.alert("失败提示", "商品信息修改失败", "error");
+			}
+		},
+		error: function(data, status, e) {
+			$.messager.alert("失败提示", "商品信息修改失败...\n" + e, "error");
+		}
+	}); 
+}
+
+// 根据商品编号查询详细信息
+function showgoodsInfoDetail(gid){
+	$.post("../../goods", {op: "findByGid", gid: gid}, data => {
+		if (data.code == 200) {
+			// 设置为只读
+			$("#goods_form input, #goods_form textarea").attr("readonly", "true");
+			$("#goods_form select").attr("disabled", "true");
+			console.log(data);
+			// 注值
+			$("#goods_dialog_tid").val(data.data.tid);
+			findByType(data.data.pid); // 根据品类给类型注值
+			$("#goods_dialog_status").val(data.data.status);
+			$("#goods_dialog_gname").val(data.data.sname);
+			$("#goods_dialog_price").val(data.data.price);			
+			
+			var imgStr = "";
+			var pics = data.data.pics.split(";");
+			for (var i = 0, len = pics.length; i < len; i++){
+				 imgStr += "<img src='../../" + pics[i] + "' width='100px' height='100px'/>&nbsp";
+			}
+			$("#show_goods_dialog_pics").html("").append($(imgStr));
+			imgStr = "";
+			var intro = data.data.intro.split(";");
+			for (var i = 0, len = intro.length; i < len; i++){
+				 imgStr += "<img src='../../" + intro[i] + "' width='100px' height='100px'/>&nbsp";
+			}
+			$("#show_goods_dialog_intro").html("").append($(imgStr));
+			$("#goods_dialog").dialog({
+				title: '商品详细信息',
+				fit: true,
+				maximizable: true,
+				buttons: [
+					{
+						text: "关闭",
+						iconCls: "icon-cancel",
+						handler: function() {
+							$("#goods_dialog").dialog("close");
+						}
+					}
+				]
+			});
+			$('#goods_dialog').dialog('open');
+		}
+	}, "json");
+} 
+
+// 按条件查询商品信息
+function searchgoodsInfo() {
+	var tid = $.trim($("#goods_search_tid").val());
+	var pid = $.trim($("#goods_search_pid").val());
+	var status = $.trim($("#goods_search_status").val());
+	var sname = $.trim($("#goods_search_gname").val());
+	goods_obj.datagrid({
+		url: "../../goods",
+		queryParams: {op: "findCondition", tid: tid, pid: pid, status: status, sname: sname}
+	})
+}
+
+//按编号查询子类型
+function findByType(pid) {
+	$.post("../../ptype", {op: "findByPid", pid: pid}, data => {
+		var str = '<option value='+data.pid+'>'+data.pname+'</option>';
+		$("#goods_dialog_pid").html("").append(str);
+	})
+}
+
+</script>

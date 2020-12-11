@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title></title>
+		<link rel="stylesheet" href="css/footer.css">
+		<link rel="stylesheet" href="css/login.css">
+		<link rel="stylesheet" href="css/nav-simple.css">
+		<link rel="stylesheet" href="css/layout.css">
+		<link rel="stylesheet" href="css/reg.css" />
+	</head>
+	<style type="text/css">
+		.w {
+			width: 1080px;
+			margin: 0 auto;
+			position: relative;
+			overflow: hidden;
+		}
+		
+		#code{
+			float: left;
+			width: 90px;
+			margin-left: 52px;
+		}
+		
+		#code_img{
+			float: left;
+			margin-left: 5px;
+			padding-bottom: 20px;
+		}
+		#again_code{
+		    position: absolute;
+			width: 100px;
+			margin-top: 20px;
+			margin-left: -50px;
+		}
+	</style>
+	<body>
+		<div class="nav-simple">
+			<div class="w">
+				<a class="logo" href="/index.html">MMALL</a>
+			</div>
+		</div>
+		<div class="page-wrap">
+			<div class="w">
+				<div class="user-con">
+					<div class="user-title">用户登录</div>
+					<div class="user-box">
+						<div class="error-item">
+							<i class="fa fa-minus-circle error-icon"></i>
+							<p class="err-msg">Error</p>
+						</div>
+						<ul>
+							<li>
+								<label class="user-label" for="password">
+									<i class="fa fa-lock"></i>
+								</label>
+								<input type="text" class="user-content" id="email" placeholder="请输入邮箱" autocomplete="off">
+							</li>
+							<li>
+								<label class="user-label" for="password">
+								    <i class="fa fa-lock"></i>
+								</label>
+								<input type="password" class="user-content" id="pwd" placeholder="请输入密码" autocomplete="off">
+							</li>
+							<li>
+								<label class="user-label" for="password">
+									<i class="fa fa-lock"></i>
+								</label>
+								<input type="text" class="user-content" id="code" placeholder="请输入验证码" autocomplete="off">
+								<img width="100px" height="35px"  id="code_img" />
+								<a id="again_code" href="#">看不清，换一张</a>
+							</li>
+						</ul>
+						<button class="button_ok" >注&nbsp;&nbsp;&nbsp;&nbsp;册</button>
+						<div class="link-item">
+							<a class="link" href="./user-pass-reset.html" target="_blank">忘记密码</a>
+							<a class="link" href="./user-register.html" target="_blank">免费注册</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--footer-->
+		<div class="footer">
+			<div class="w">
+				<div class="links">
+					<a class="link" href="http://www.imooc.com" target="_blank">慕课网</a> |
+					<a class="link" href="https://www.baidu.com" target="_blank">百度</a> |
+					<a class="link" href="https://www.taobao.com" target="_blank">淘宝</a> |
+					<a class="link" href="https://www.zhihu.com" target="_blank">知乎</a>
+				</div>
+				<p class="copyright">
+					Copyright © 2017 happymmall.com All Right Reserved
+				</p>
+			</div>
+		</div>
+		<!--footer-->
+	</body>
+</html>

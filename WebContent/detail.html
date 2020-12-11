@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/detail.css">
+</head>
+<style type="text/css">
+.crumb .crumb-item {
+    color: #888;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+</style>
+<body>
+<!--header-->
+       <div class="crumb">
+            <div class="w">
+                <div class="crumb-list">
+                    <a href="./index.html" class="crumb-item">首页</a>
+                    <span>></span>
+                    <span class="crumb-item">商品详情</span>
+                </div>
+            </div>
+        </div>
+       <div class="page-container w" id="detail">
+            <div class="intro-wrap clear">
+                <div class="p-img-wrap">
+                    <div class="main-img-con">
+                        <img class="main-img" :src="pics[0]" >
+                    </div>
+                    <ul class="p-img-list" v-for="pic in pics">
+                        <li class="p-img-item"><img class="p-img" :src="pic" @click="showimg(pic)"></li>                
+                    </ul>
+                </div>
+                <div class="p-info-wrap">
+                    <p class="p-name">{{goodsinfo.sname}}</p>
+                    <p class="p-subtitle">送品牌烤箱，五一大促</p>
+                    <div class="info-item p-price-con">
+                        <span class="label">价格：</span>
+                        <span class="p-price">￥{{goodsinfo.price}}</span>
+                    </div>
+                    <div class="info-item p-quantity-con">
+                        <span class="label">库存</span>
+                        <span class="p-price">{{stock}}</span>
+                    </div>
+                    <div class="info-item p-quantity-con">
+                        <span class="label" >{{attr[0].attrname}}</span>
+                        <select id="attr_select" @click="getAttrImg" >
+                        	<option value="">---请选择--- </option>
+                        	<option v-for="att in attr" :value="att.attrvalue" >{{att.attrvalue}}</option>
+                        </select>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">数量 </span>
+                        <input class="p-count" value="1" readonly="readonly">
+                        <span class="p-count-btn plus" data-opera-type="plus"  @click="editor_count_add" >+</span>
+                        <span class="p-count-btn minus" data-opera-type="mius" @click="editor_count_minus"  >-</span>
+                    </div>
+                    <div class="info-item">
+                        <a class="btn cart-add" @click="addCart">加入购物车</a>
+                    </div>
+                    <div class="popup_con">
+							<div class="popup">
+								<p id="popup_info"></p>
+							</div>
+				</div>
+                    
+                </div>
+                
+            </div>
+            <div class="detail-wrap">
+	            <div class="detail-tab-con">
+	                <ul class="tab-list">
+	                    <li class="tab-item active">商品详情</li>
+	                </ul>
+	            </div>
+	            <div class="detail-con">         
+	             	<p v-for="intr in intro">
+	             		<img alt="10000.jpg" :src="intr" width="100%" height="100%">
+	             	</p>			
+	            </div>
+        	</div>
+       </div>
+<!--footer-->
+<div class="footer">
+    <div class="w">
+        <div class="links">
+            <a class="link" href="http://www.imooc.com" target="_blank">慕课网</a> |
+            <a class="link" href="https://www.baidu.com" target="_blank">百度</a> |
+            <a class="link" href="https://www.taobao.com" target="_blank">淘宝</a> |
+            <a class="link" href="https://www.zhihu.com" target="_blank">知乎</a>
+        </div>
+        <p class="copyright">
+            Copyright © 2020 haier.com All Right Reserved
+        </p>
+    </div>
+</div>
+<script type="text/javascript" src="./js/jquery.min.js"></script>
+<script type="text/javascript" src="./js/axios.js"></script>
+<script type="text/javascript" src="./js/vue.js"></script>
+<script type="text/javascript" src="./js/qs.js"></script>
+<script type="text/javascript" src="./js/tk.js"></script>
+<script>
+//添加 购物车
+var Mid;
+var Sid;
+//数量的加减操作
+var count = 1;
+
+let show_detail = new Vue({
+	el: "#detail",
+	data: {
+		goodsinfo: {},
+		pics: [],
+		stock: "",
+		attr: [],
+		intro: []
+	},
+	mounted: function() {
+		let gid = location.search;
+		gid = gid.replace('?', "");
+		axios.post("goods", qs.stringify({op: "findByGid", gid: gid})).then(rt => {
+			this.goodsinfo = rt.data.data;
+			this.pics = rt.data.data.pics.split(";");  // 商品图片的切割
+			this.intro = rt.data.data.intro.split(";"); // 商品简介的切割
+			axios.post("skuinfo", qs.stringify({op: "getAttributes", gid: gid})).then( rt => {
+				Sid = rt.data[0].sid;
+				this.attr = rt.data;
+				this.stock = 0;
+				for(let i = 0, len = rt.data.length; i < len; i ++) {
+					this.stock += rt.data[i].stock;
+				}
+			})
+		});
+		axios.get("member", {params: {op:"check"}}).then(rt => {
+			if (rt.status == 200 && rt.data.code == 200) {
+				Mid = rt.data.data.mid;
+				return;
+			}
+		}, "json");
+	},
+	methods: {
+		showimg: function(pic) {
+			$(".main-img").attr("src", pic);
+		},
+		getAttrImg: function() {
+			var attrvalue = $("#attr_select").val();
+			if(attrvalue != "") {
+				for(let i = 0, len = this.attr.length; i < len; i ++) {
+					if(attrvalue == this.attr[i].attrvalue) {
+						$(".main-img").attr("src", this.attr[i].pics);
+						this.stock = this.attr[i].stock;
+						return;
+					}
+				}
+			}
+		},
+		editor_count_add: function() {
+			count = $(".p-count").val();
+			$(".p-count").val(++count);
+		},
+		editor_count_minus: function() {
+			count = $(".p-count").val();
+			if(count > 1){
+				$(".p-count").val(--count);
+			}	
+		},
+		addCart: function() {
+			var mid = Mid;
+			var sid = Sid;
+			var num = count;
+			if ($("select").val() != "") {
+				axios.post("shopcart", qs.stringify({op: "add", mid:mid, sid:sid, num:num})).then( rt => {
+				}, "json")
+				return showMsg("加入购物车成功", "green");
+			}
+			return showMsg("请选择商品属性", "red");
+		}
+	}
+});
+</script>
+</body>
+</html>

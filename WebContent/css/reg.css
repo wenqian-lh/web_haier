@@ -1,0 +1,47 @@
+.w{
+    width: 1080px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.user-box ul{
+	text-align: center;
+}
+
+.user-box ul li{
+	padding-bottom: 20px;
+}
+.user-box ul li input{
+	line-height: 30px;
+	width: 250px;
+	font-size: 15px;
+}
+#code{
+	width: 150px;
+}
+#get_code{
+	width: 100px;
+	height: 30px;
+}
+#submit:hover{
+	color: #AAAAAA;
+	/* background-color: #DDDDDD; */
+}
+
+.button_ok {
+	width: 260px; 
+	height: 40px;
+	text-align: center; 
+	margin-left: 50px; 
+	background-color: #C60023;
+	border: #C60023 0px solid;
+	font-size: 20px;
+	font-weight: 800;
+}
+
+.error_tishi{
+	float: left;
+	color: red;
+	margin-left: 52px;
+}

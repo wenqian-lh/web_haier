@@ -1,0 +1,205 @@
+<div id="ptypes_search" style="float:left; height:30px">
+	<div class="datagrid-btn-separator"></div>
+	<label class="navy_lbl">搜索类型:</label>
+	<select id="ptypes_search_tid" class="navy_slt200">
+	</select>
+	<label class="navy_lbl">请输入:<input type="text" id="ptypes_search_pname" class="navy_ipt200" placeholder="请输入"></input> 
+	<a href="javascript:searchPTypesInfo()" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a></lable>
+</div>
+
+<table id="ptypes_data" data-options="fit:true" ></table>  
+
+	
+<script type="text/javascript">
+	var ptypes_types_obj = [];
+	var ptypes_types;
+	var ptypes_index = undefined;
+	var ptypes_op;
+	var ptypes_info;
+	var ptypes_obj;
+	$(function() {
+		$.post('../../type', {op:"findAll"}, data => {
+			ptypes_types = data;
+			ptypes_types_obj = data.rows;
+			var str = '<option value="">-- 请选择 --</option>';
+			$.each(data, function(index, item){
+				str += '<option value="'+ item.tid +'">'+ item.tname +'</option>';
+			})
+			$("#ptypes_search_tid").html("").append($(str));
+			showGoodsDataGrid();
+		}, "json")
+	})
+	
+	function showGoodsDataGrid() {
+			ptypes_obj = $('#ptypes_data').datagrid({   
+		    url:'../../ptype',  
+		    queryParams:{op:"findByPage"},
+		    fitColumns: true,
+		    striped: true,
+		    loadMsg: "数据加载中...",
+		    pagination: true,
+		    pagePosition: "top",
+		    rownumbers: true,
+		    pageSize: 5,
+		    pageList: [5, 10, 15, 20, 30, 40, 50, 100], 
+		    sortName: "pid",
+		    remoteSort: false,
+		    singleSelect: true,
+		    columns:[[   
+		    	{field:'tid',title:'父分类',width:100,align:'center', formatter:function(val, row, index){	
+		    		for (var i = 0, len = ptypes_types.length; i < len; i++) { 
+						if (val == ptypes_types[i].tid) {
+							return ptypes_types[i].tname;
+						}
+					}
+				}, editor:{type:"combobox", options:{required:true, valueField:"tid", textField:"tname", data:ptypes_types}}},
+		        {field:'pid',title:'子分类编号',width:100,align:'center', sortable:"true"},   
+		        {field:'pname',title:'子分类名称',width:100,align:'center', editor:{type:"text", options:{required:true}}}   
+		    ]],
+		    toolbar: [{
+		    	iconCls: 'icon-add',
+		    	text: "添加",
+		    	handler: function(){
+		    		ptypes_op = "add";
+		    		ptypes_info = "添加";
+		    		//判定有没有正在添加的行 有就直接返回
+		    		if( ptypes_index != undefined){
+	    				return;
+	    			}
+		    		// 在表格的最前面插入一行
+		    		ptypes_obj.datagrid("insertRow", {index: 0, row: {}});
+		    		ptypes_index = 0;
+		    		ptypes_obj.datagrid("beginEdit", ptypes_index);
+		    	}	
+		    },'-',{
+		    		iconCls: 'icon-edit',
+		    		text: "修改",
+		    		handler: function(){
+		    			ptypes_op = "update";
+		    			ptypes_info = "修改";
+		    			
+		    			// 判定有没有正在修改的行
+		    			if( ptypes_index != undefined){
+		    				return;
+		    			}
+		    			
+		    			//获取选中的行
+		    			var row = ptypes_obj.datagrid("getSelected");
+		    			if(row == null) { // 说明没有选中的行
+		    				$.messager.show({
+	    						title:'温馨提示',
+	    						msg:'请选择您要修改的行',
+	    						timeout:2000,
+	    						showType:'slide'
+	    					});
+		    		        return;
+		    			}
+		    			
+		    			// 获取选中的行的索引
+		    			ptypes_index = ptypes_obj.datagrid("getRowIndex", row);
+		    			
+		    			//开启编辑
+		    			ptypes_obj.datagrid("beginEdit", ptypes_index);
+		    		}
+		    },'-',{
+	    		iconCls: 'icon-save',
+	    		text: "保存",
+	    		handler: function(){
+	    			// 如果没有别编辑的行 直接返回
+	    			if( ptypes_index == undefined){
+	    				return;
+	    			}
+	    			
+	    			ptypes_obj.datagrid("endEdit", ptypes_index); // 结束编辑
+	    			var row = ptypes_obj.datagrid("getChanges")[0];  			
+	    			if(row == undefined){
+	    				ptypes_index = undefined;
+	    				return;
+	    			}
+	    			// 此时row是一个object，n那么js如何在对象中添加属性呢：：
+	    			row.op = ptypes_op;
+	    			$.post("../../ptype", row, data =>{
+	    				console.log(data.code);
+	    				if( data.code == 200 ) {
+	    					$.messager.show({
+	    						title:'成功提示',
+	    						msg:'子分类'+ptypes_info+'成功',
+	    						timeout:2000,
+	    						showType:'slide'
+	    					});
+						ptypes_obj.datagrid("reload"); // 重新加载数据，目的是重新分页
+							
+	    				} else {
+	    					//如果没有成功 则需要回滚数据
+	    					ptypes_obj.datagrid("rejectChanges");
+	    					$.messager.alert('失败提示','子分类'+ptypes_info+'失败','error');
+	    				}
+	    				row = null;
+	    				ptypes_index = undefined;
+	    			}, "json");
+	    			
+	    		}
+		    },'-',{
+		    	iconCls: 'icon-no',
+		    	text: "删除",
+		    	handler: function(){
+		    		ptypes_op = "delete";
+	    			ptypes_info = "删除";
+	    			
+	    			// 获取选中的行
+					var row = ptypes_obj.datagrid('getSelected');
+					if (row == null) {
+						$.messager.show({title:'温馨提示', msg:'请选择您要删除的子分类...', timeout:2000, showType:'slide'});
+						return;
+					}
+					
+					if (row == undefined) {
+						ptypes_index = undefined;
+						return;
+					}
+					
+					$.messager.confirm('Confirm', '您确定要删除?', function(r){
+						if (r){
+							// 此时row是一个Object,那么 js中 如何在 对象中 添加属性 呢？
+							//row.op = "add";	// row["op"] = "add"
+							row.op = ptypes_op;
+							
+							// 将这一行数据发送到后台,插入到数据库中
+							// $.post("../../type", row, function(data){}, "json");
+							$.post("../../ptype", row, data => {
+								if (data.code == 200) {
+									$.messager.show({title:'成功提示', msg:'子分类'+ptype_info+'成功...', timeout:2000, showType:'slide'});
+									// 刷新页面数据
+									ptypes_obj.datagrid("reload");	// 重新加载数据,目的  重新分页
+								} else {
+									// 如果没有成功,则需要 回滚数据
+									ptypes_obj.datagrid("rejectChanges");
+									$.messager.alert('失败提示', '子分类'+ptype_info+'失败...', 'error');
+								}
+								row = null;
+								ptypes_index = undefined;
+							}, "json");	
+						}
+					});
+		    	}
+		    },'-',{
+	    		iconCls: 'icon-undo',
+	    		text: "撤销",
+	    		handler: function(){
+	    			ptypes_index = undefined;
+	    			ptypes_obj.datagrid("rejectChanges")
+	    		}
+		    }]
+		}); 
+	}
+	
+	function searchPTypesInfo() {
+		var tid = $.trim($("#ptypes_search_tid").val());
+		var pname = $.trim($("#ptypes_search_pname").val());
+		ptypes_obj.datagrid({
+			url: "../../ptype",
+			queryParams: {op:"findCondition", tid:tid, pname:pname}
+		})
+	}
+	
+</script>
