@@ -9,74 +9,37 @@
     <link rel="stylesheet" href="css/layout.css">
     </head>
 <style type="text/css" >
-
+ .popup_con {
+ 	position: fixed;
+ 	top: 330px;
+ 	left: 730px;
+ }
 </style>
 <body>
- <!--nav-->
-<div class="nav">
-    <div class="w">
-        <div class="user-info">
-            <span class="user not-login">
-                <span class="link js-login" >登录</span>
-                <span class="link js-register">注册</span>
-            </span>
-            <span class="user login">
-                <span class="link-text">
-                    欢迎，
-                    <span class="username"></span>
-                </span>
-                <span class="link js-logout">退出</span>
-            </span>
-        </div>
-        <ul class="nav-list">
-            <li class="nav-item">
-                <a class="link" href="./cart.html">
-                    <i class="fa fa-shopping-cart"></i>
-                    购物车(<span class="cart-count">0</span>)
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="link" href="./order-list.html">我的订单</a>
-            </li>
-            <li class="nav-item">
-                <a class="link" href="./user-center.html">我的MMall</a>
-            </li>
-            <li class="nav-item">
-                <a class="link" href="./about.html">关于MMall</a>
-            </li>
-        </ul>
-    </div>
-</div>
-<!--nav-->
-<!--header-->
-<div class="header">
-    <div class="w">
-        <a class="logo" href="./index.html">MMall</a>
-        <div class="search-con">
-            <input class="search-input" id="search-input" placeholder="请输入商品名称"/>
-            <button class="btn search-btn" id="search-btn">搜索</button>
-        </div>
-    </div>
-</div>
+
 <!--header-->
 <div class="crumb">
             <div class="w">
                 <div class="crumb-con">
-                    <a class="link" href="./index.html">MMall</a>
+                    <a class="link" href="./index.html">首页</a>
                     <span>>订单支付</span>
                     <span class="link-text"></span>
                 </div>
             </div>
 </div>
 <div class="pay-wrap w">
-    <p class="pay-tips">订单提交成功，请您尽快支付！ 订单号：1540542955477</p>
+    <p class="pay-tips" id="order_pay"></p>
     <p class="pay-tips enhance">请使用支付宝扫描如下二维码进行支付：</p>
     <div class="img-con">
-    <img class="qr-code" src="http://img.happymmall.com/qr-1540542955477.png">
+    	<img class=.qr-code" src="image/icon/pay.jpg" width=100% height=100%>
     </div>
 </div>
-
-
+						
+<div class="popup_con">
+	<div class="popup">
+		<p id="popup_info"></p>
+	</div>
+</div>
 
 
 <!--footer-->
@@ -93,7 +56,27 @@
         </p>
     </div>
 </div>
-<!--footer-->
+
+		<script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/qs.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script  type="text/javascript" src="js/tk.js"></script>
+		
+		<script >
+			$(function() {
+				var oid = location.search.replace("?", "");
+				$("#order_pay").html("").append("订单提交成功，请您尽快支付！ 订单号：" + oid)
+				setTimeout(function() {
+					var onloadimg = "<img src='image/icon/pay_onload.gif' width=100% height=100%>";
+					$(".img-con").html("").append(onloadimg);
+					showMsg("支付成功，即将返回首页", "green", function() {
+						location.href="index.html";
+					})
+				}, 3000);
+				
+			})
+		</script>
     </body>
 </html>
 

@@ -63,6 +63,7 @@
                 <ul class="floor-list">
                     <li class="floor-item" v-for="good in goods">
                         <a :href="'./detail.html?' + good.gid">
+                       	    <span class="price-text">￥{{good.price}}</span>
                             <img class="floor-img" id="goods-img" :src="good.pics.split(';')[0]" :alt="good.sname" />
                             <span class="floor-text">{{good.sname}}</span>
                         </a>

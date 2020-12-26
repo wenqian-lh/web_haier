@@ -9,7 +9,7 @@ import java.io.Serializable;
  */
 public class OrderInfo implements Serializable {
 	private static final long serialVersionUID = 2184735292859782640L;
-	private Integer oid;
+	private String oid;
 	private Integer mid;
 	private Double total;
 	private String addr;
@@ -23,12 +23,17 @@ public class OrderInfo implements Serializable {
 				+ ", orderDate=" + orderDate + ", payDate=" + payDate + "]";
 	}
 
-	public Integer getOid() {
+	
+	public String getOid() {
 		return oid;
 	}
-	public void setOid(Integer oid) {
+
+
+	public void setOid(String oid) {
 		this.oid = oid;
 	}
+
+
 	public Integer getMid() {
 		return mid;
 	}

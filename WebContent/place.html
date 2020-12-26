@@ -7,7 +7,7 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" /> 	
 	<title>收货地址</title>
 	<link rel="stylesheet" type="text/css" href="css/reset.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
@@ -70,7 +70,6 @@
 			margin-left: 29px;
 			font-size: 18px;
 		}
-		
 	</style>
     
 </head>
@@ -95,7 +94,7 @@
 		</div>
         
         
-		<div class="right_content clearfix" id="addrss_editor" id="address_item">
+		<div class="right_content clearfix" id="addrss_editor" id="address_item" style="z-index: 0;">
 				<h3 class="common_title2">收货地址</h3>
 				<div class="site_con">
 					<dl>
@@ -123,7 +122,7 @@
                      <a @click="addflag" href="#"  id="add-place">新增地址</a>    
 				</div>
 				<h3 class="common_title2">编辑地址</h3>
-				<div class="main_center">
+				<div class="main_center" style="width: 500px; height: 340px;">
 					<ul>
 						<li>
 							<label >收件人姓名：</label>
@@ -160,6 +159,9 @@
 							</div>
 						</div>
 				</div>
+				<div id="allmap" style="position: absoulate; width: 665px; height: 400px; float: right; margin-top: -390px; z-index: 9;">
+					
+				</div>
 		</div>
     </div>
 
@@ -184,7 +186,28 @@
 <script type="text/javascript" src="./js/qs.js"></script>
 <script  type="text/javascript" src="js/addr.js"></script>
 <script  type="text/javascript" src="js/tk.js"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=1.0&type=webgl&ak=3xxVocMFFkr5IRsMjvGKOyvygZURQmAG"></script>
 <script type="text/javascript">
+
+
+/* function baidumap(address) {
+	var map = new BMapGL.Map("allmap");
+	// 创建地图实例 
+	//var point = new BMapGL.Point(116.404, 39.915);
+	// 创建点坐标 
+	map.centerAndZoom(address, 15);
+	// 添加带有定位的导航控件
+	var navigationControl = new BMapGL.NavigationControl({
+	// 靠左上角位置
+	anchor: BMAP_ANCHOR_TOP_LEFT,
+	// LARGE类型
+	type: BMAP_NAVIGATION_CONTROL_LARGE,
+	// 启用显示定位
+	enableGeolocation: true
+	});
+	map.addControl(navigationControl);
+} */
+
 var mid;
 var addrss_info = new Vue({
 	el: "#addrss_editor",
@@ -200,16 +223,31 @@ var addrss_info = new Vue({
 		addrId: "",
 		flag: false // 保存和修改按钮的标志  false为保存  true为修改
 	},
+	watch: {
+		province: function() {
+			this.baidumap(this.province);
+		},
+		city: function() {
+			this.baidumap(this.province + " " + this.city);
+		},
+		area: function() {
+			this.baidumap(this.province + " " + this.city + " " + this.area);
+		},
+		addr: function() {
+			this.baidumap(this.province + " " + this.city + " " + this.area + " " + this.addr);
+		}
+	},
 	mounted: function() {
 		bindAddr("xml/city.xml");
-		axios.post("address", qs.stringify({op: "findAll"})).then(rt => {
+		axios.post("address", qs.stringify({op: "findAll"})).then(rt => {			
 			this.addressinfo = rt.data;
 			for(var i = 0, len = this.addressinfo.length; i < len; i ++) {
 				if(this.addressinfo[i].status == 1){
 					this.onaddress = this.addressinfo[i];					
-					return;
+					break;
 				}
 			}
+			this.baidumap("长沙");
 		});
 	},
 	methods: {
@@ -292,6 +330,23 @@ var addrss_info = new Vue({
 				showMsg("设置失败", "red");
 				return;
 			});
+		},
+		baidumap: function(address) {
+			var map = new BMapGL.Map("allmap");
+			// 创建地图实例 
+			//var point = new BMapGL.Point(116.404, 39.915);
+			// 创建点坐标 
+			map.centerAndZoom(address, 15);
+			// 添加带有定位的导航控件
+			var navigationControl = new BMapGL.NavigationControl({
+			// 靠左上角位置
+			anchor: BMAP_ANCHOR_TOP_LEFT,
+			// LARGE类型
+			type: BMAP_NAVIGATION_CONTROL_LARGE,
+			// 启用显示定位
+			enableGeolocation: true
+			});
+			map.addControl(navigationControl);
 		}
 	}
 })

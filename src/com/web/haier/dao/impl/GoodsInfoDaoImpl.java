@@ -165,7 +165,7 @@ public class GoodsInfoDaoImpl implements IGoodsInfoDao{
 	@Override
 	public List<GoodsInfo> findByName(String name, int page, int rows) {
 		DBHelper db = new DBHelper();
-		String sql = "select gid,sname, pics from goodsinfo where sname like concat('%', ?, '%') and status != 0 order by gid desc limit ?, ?";
+		String sql = "select gid,sname, pics, price from goodsinfo where sname like concat('%', ?, '%') and status != 0 order by gid desc limit ?, ?";
 		return db.finds(GoodsInfo.class, sql, name, (page - 1) * rows, rows);
 	}
 

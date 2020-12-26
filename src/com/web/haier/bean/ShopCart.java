@@ -17,17 +17,28 @@ public class ShopCart implements Serializable {
 	private String attrname;
 	private String attrvalue;
 	private Double price;
+	private Double cost;
 	private String pics;
 	
 	private String sname;
 
+	
+	
 	@Override
 	public String toString() {
 		return "ShopCart [cartId=" + cartId + ", mid=" + mid + ", sid=" + sid + ", num=" + num + ", attrname="
-				+ attrname + ", attrvalue=" + attrvalue + ", price=" + price + ", pics=" + pics + ", sname=" + sname
-				+ "]";
+				+ attrname + ", attrvalue=" + attrvalue + ", price=" + price + ", cost=" + cost + ", pics=" + pics
+				+ ", sname=" + sname + "]";
 	}
-	
+
+	public Double getCost() {
+		return cost;
+	}
+
+	public void setCost(Double cost) {
+		this.cost = cost;
+	}
+
 	public String getAttrname() {
 		return attrname;
 	}
@@ -101,6 +112,7 @@ public class ShopCart implements Serializable {
 		result = prime * result + ((attrname == null) ? 0 : attrname.hashCode());
 		result = prime * result + ((attrvalue == null) ? 0 : attrvalue.hashCode());
 		result = prime * result + ((cartId == null) ? 0 : cartId.hashCode());
+		result = prime * result + ((cost == null) ? 0 : cost.hashCode());
 		result = prime * result + ((mid == null) ? 0 : mid.hashCode());
 		result = prime * result + ((num == null) ? 0 : num.hashCode());
 		result = prime * result + ((pics == null) ? 0 : pics.hashCode());
@@ -133,6 +145,11 @@ public class ShopCart implements Serializable {
 			if (other.cartId != null)
 				return false;
 		} else if (!cartId.equals(other.cartId))
+			return false;
+		if (cost == null) {
+			if (other.cost != null)
+				return false;
+		} else if (!cost.equals(other.cost))
 			return false;
 		if (mid == null) {
 			if (other.mid != null)

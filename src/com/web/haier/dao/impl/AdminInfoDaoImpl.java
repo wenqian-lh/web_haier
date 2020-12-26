@@ -20,7 +20,7 @@ public class AdminInfoDaoImpl implements IAdminInfoDao{
 	@Override
 	public AdminInfo login(String adminId, String pwd) {
 		DBHelper db = new DBHelper();
-		String sql = "select adminId, aname, tel, photo, status from admininfo where adminId=? and pwd=md5(?) and 1=1";
+		String sql = "select adminId, aname, tel, photo, status from admininfo where adminId=? and pwd=md5(?) and 1=1 and status != 2";
 		return db.find(AdminInfo.class, sql, adminId, pwd);
 	}
 

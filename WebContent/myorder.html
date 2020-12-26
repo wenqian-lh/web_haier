@@ -191,10 +191,15 @@
 			<div class="submit-con">
 				<span>总价：</span>
 				<span class="submit-total">{{totalPrice}}</span>
-				<span class="btn submit-btn" onclick="./order.html">支付</span>
+				<span class="btn submit-btn" @click="pay">去支付</span>
 			</div>
 			&nbsp
 		</div>
+		<div class="popup_con">
+							<div class="popup">
+								<p id="popup_info"></p>
+							</div>
+					</div>
 		</div>
 			<!--footer-->
 		<div class="footer">
@@ -246,7 +251,7 @@
 							<div class="popup">
 								<p id="popup_info"></p>
 							</div>
-						</div>
+					</div>
 				</div>
 		</div>
 	
@@ -321,7 +326,7 @@
 						axios.post("address", qs.stringify({op: "add", name: this.name, tel: this.tel, province: this.province, city: this.city, area: this.area, addr: this.addr})).then( rt => {
 							if(rt.data == 200) {
 								showMsg("地址信息添加成功", "green", function() {
-									location.href="myorder.html";
+									location.href="myorder.html" + location.search;
 								});							
 								return;
 							}
@@ -337,7 +342,47 @@
 					select_place: function(addrId) {  // 选择地址事件
 						this.onaddress = this.addressinfo[addrId];	
 						$("#all_place").addClass("all_place");
+					},
+					pay: function() {  // 生成订单
+						//将支付按钮转换为加载动图
+						var onloadimg = "<img src='image/icon/pay_onload.gif' width=50px height=50px>";
+						$(".submit-btn").html("").append(onloadimg);
+						// 收货地址
+						var address = this.onaddress.name + "-" + this.onaddress.tel + "-" + this.onaddress.province + "-" + this.onaddress.city + "-" + this.onaddress.area + "-" + this.onaddress.addr;
+						// 提交订单，生成订单表
+						axios.post("order", qs.stringify({op: "add", total: this.totalPrice, addr: address})).then(rt => {
+							if(rt.status == 200 && rt.data.code == 200) {						
+								var orderlist = "";
+							    for(var i=0, len = this.carts.length; i < len; i++){
+						             var item = this.carts[i];
+						             var list = item.sid + "_" + item.num + "_" + item.price + "_" + item.cost;
+						     	     orderlist += list + "-"; 
+						         }
+							    // 提交订单详细信息表
+							    var oid = rt.data.msg;
+							    axios.post("order", qs.stringify({op: "addorderlist", oid: rt.data.msg, orderlist: orderlist})).then(rt => {
+							    	if (rt.status == 200 && rt.data == 200) {
+							    		showMsg("订单信息提交成功,正在转到支付页面....", "green", function() {
+							    			axios.post("order", qs.stringify({op: "pay"})).then(rt =>{
+							    				console.log(rt);
+							    				if(rt.status == 200 && rt.data.code == 200) {
+							    					$("body").html("").append(rt.data.msg);		
+							    				}
+							    			});
+							    		})
+							    	} else {
+							    		showMsg("订单生成失败，请重新购买....", "red", function() {
+							    			location.href = "index.html";
+							    		})
+							    	}
+							    	axios.get("shopcart", {params: {op:"delete", cartIds: this.cartIds.toString()}});
+							    }) 
+							}
+							return;
+						})
+						
 					}
+					
 				}
 			})
 		</script>
