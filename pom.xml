@@ -1,5 +1,0 @@
-<dependency>
-    <groupId>com.alipay.sdk</groupId>
-    <artifactId>alipay-easysdk</artifactId>
-    <version>2017032480803</version>
-</dependency>
