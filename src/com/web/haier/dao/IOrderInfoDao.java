@@ -3,6 +3,8 @@
  */
 package com.web.haier.dao;
 
+import java.util.List;
+
 import com.web.haier.bean.OrderInfo;
 
 /**
@@ -34,5 +36,11 @@ public interface IOrderInfoDao {
 	 * @return
 	 */
 	public int updateOrderStatus(String oid, String payDate);
+	
+	/**
+	 * 分页查询所有
+	 * @return
+	 */
+	public List<OrderInfo> finds();
 
 }

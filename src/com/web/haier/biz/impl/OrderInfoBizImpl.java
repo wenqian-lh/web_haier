@@ -3,6 +3,8 @@
  */
 package com.web.haier.biz.impl;
 
+import java.util.List;
+
 import com.web.haier.bean.OrderInfo;
 import com.web.haier.biz.IOrderInfoBiz;
 import com.web.haier.dao.IOrderInfoDao;
@@ -31,6 +33,12 @@ public class OrderInfoBizImpl implements IOrderInfoBiz{
 	public int updateOrderStatus(String oid, String payDate) {
 		IOrderInfoDao orderInfoDao = new OrderInfoDaoImpl();
 		return orderInfoDao.updateOrderStatus(oid, payDate);
+	}
+	
+	@Override
+	public List<OrderInfo> finds() {
+		IOrderInfoDao orderInfoDao = new OrderInfoDaoImpl();
+		return orderInfoDao.finds();
 	}
 
 }

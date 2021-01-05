@@ -49,12 +49,25 @@ public class OrderInfoServlet extends BaseServlet{
 		case "pay": pay(request, response); break;  // 沙箱支付
 		case "add": add(request, response); break; // 添加订单信息
 		case "addorderlist": addorderlist(request, response); break; // 添加订单详细信息
+		case "finds": finds(request, response); break; // 分页查询订单信息
 		default : this.error(request, response); break;
 	}
 
 }
 
 
+	/**
+	 * 查询所有订单信息
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	private void finds(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		IOrderInfoBiz orderInfoBiz = new OrderInfoBizImpl();
+		this.send(response, orderInfoBiz.finds());
+	}
+	
 	/**
 	 * 沙箱支付
 	 * @param request

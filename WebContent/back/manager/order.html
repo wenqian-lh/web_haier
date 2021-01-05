@@ -1,0 +1,106 @@
+<table id="order_data" data-options="fit:true"></table>
+
+<!-- 添加商品和显示详细信息的窗口  -->
+<div id="order_dialog" class="easyui-dialog", data-options="resizable:true, modal:true, closed:true">
+	<form id="order_form" >
+		<ul>
+		 	<li> <label>品类：</label> <select id="order_dialog_tid" class="navy_ipt400" onchange="getPtypes('#order_dialog_tid', '#order_dialog_pid')"></select> </li>
+		 	<li> <label>类别：</label> <select id="order_dialog_pid" class="navy_ipt400" ></select> </li>
+		 	<li> <label class="navy_lbl">商品状态:</label>
+			     <select id="order_dialog_status" class="navy_slt200">
+			     	<option value="">--请选择--</option>
+			     	<option value="0">下架</option>
+     				<option value="1">正常</option>
+     				<option value="2">缺货</option>
+			     </select>
+			 </li>
+			<li> <label for="order_dialog_gname">商品名称：</label> <input type="text" id="order_dialog_gname" class="navy_ipt400" placeholder="请输入商品名称"></input> </li>
+			<li> <label for="order_dialog_price">商品价格：</label> <input type="text" id="order_dialog_price" class="navy_ipt400" placeholder="请输入商品价格"></input> </li>
+		</ul>
+	</form>
+	
+	
+	<style>
+		#order_form li {
+			list-style-type: none;
+			margin-top: 20px;
+		}
+		
+		#order_form .myli {
+			width: 100%;
+		}
+		
+		#order_form li> label {
+			width: 100px;
+			display: inline-block;
+			text-align: right;
+		}
+	</style>
+</div>  
+<hr />
+<table id="order_info">    </table>  
+
+<script type="text/javascript">
+
+var order_obj = $('#order_info').datagrid({   
+    url:'../../order',
+    queryParams:{op:"finds"},
+	fitColumns: true, 
+	singleSelect: true,
+	striped: true,
+    columns:[[   
+        {field:'oid',title:'订单编号',width:100,align:'center'},   
+        {field:'mid',title:'用户id',width:30,align:'center'},   
+        {field:'total',title:'总价',width:30,align:'center'},
+        {field:'addr',title:'用户信息',width:110,align:'center'},
+        {field:'orderDate',title:'下单时间',width:60,align:'center'},
+        {field:'status',title:'支付情况',width:30,align:'center', formatter: function(val, row, index){
+        	if(val == 1) {
+        		return "<font color='green'>已支付</font>";
+        	} else if(val == 2) {
+        		return "<font color='red'>缺货</font>";
+        	} else {
+        		return "<font color='red'>未支付</font>";
+        	}
+        }},
+        {field:'_operator', title:'操作', width: 50, align:"center", formatter: function(val, row, index){
+        	return '<a href="javascript:showorderInfoDetail(\''+ row.oid +'\')" class="navy-icon-detail">详细</a>';
+        }}
+    ]]   
+});  
+
+//修改商品信息的方法
+function showorderInfoDetail(oid) {
+	$.post("../../order", {op: "findByOid", oid: oid}, data => {
+		if (data.code == 200) {
+			// 移除只读属性
+			$("#order_form input, #order_form textarea").removeAttr("readonly");
+			$("#order_form select").removeAttr("disabled");
+			// 注值
+			$("#order_dialog_tid").val(data.data.tid);
+			findByType(data.data.pid);
+			$("#order_dialog_status").val(data.data.status);
+			$("#order_dialog_gname").val(data.data.sname);
+			$("#order_dialog_price").val(data.data.price);						
+			
+			$('#order_dialog').dialog({
+				title:'订单详细',
+				fit:true,
+				buttons:[
+					{
+						text:"关闭",
+						iconCls:"icon-cancel",
+						handler:function(){
+							$('#order_dialog').dialog('close')
+						}
+					}
+				]
+			});
+			$('#order_dialog').dialog('open');
+		}
+	}, "json");
+}
+</script>
+
+
+

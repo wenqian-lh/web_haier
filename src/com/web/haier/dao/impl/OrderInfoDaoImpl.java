@@ -3,6 +3,8 @@
  */
 package com.web.haier.dao.impl;
 
+import java.util.List;
+
 import com.web.haier.bean.OrderInfo;
 import com.web.haier.dao.DBHelper;
 import com.web.haier.dao.IOrderInfoDao;
@@ -51,6 +53,13 @@ public class OrderInfoDaoImpl implements IOrderInfoDao{
 		DBHelper db = new DBHelper();
 		String sql = "update orderinfo set status = 1, payDate=?  where oid=? and 1=1";
 		return db.update(sql, payDate, oid);
+	}
+	
+	@Override
+	public List<OrderInfo> finds() {
+		DBHelper db = new DBHelper();
+		String sql = "select oid, mid, total, addr, status, orderDate, payDate from orderinfo";
+		return db.finds(OrderInfo.class, sql);
 	}
 
 }
